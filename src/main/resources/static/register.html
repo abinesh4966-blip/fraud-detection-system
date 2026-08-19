@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - Fraud Detection System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #05070f;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .box {
+            position: relative;
+            z-index: 5;
+            background: rgba(12, 18, 35, 0.9);
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            border-radius: 16px;
+            padding: 38px 36px;
+            width: 420px;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00f0ff;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8ea3;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #7f8ea3;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(5, 10, 25, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #e0e6ed;
+            font-size: 14px;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+
+        .password-guide {
+            background: rgba(0, 255, 255, 0.04);
+            border: 1px solid rgba(0, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 11px 14px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: #7f8ea3;
+        }
+
+        .password-guide strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #a0aec0;
+        }
+
+        .password-guide ul {
+            padding-left: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(90deg, #00b0ff, #00e5ff);
+            color: #001a22;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+        }
+
+        .message {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 13px;
+            display: none;
+        }
+
+        .success { color: #00e676; }
+        .error { color: #ff5252; }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #7f8ea3;
+        }
+
+        .login-link a {
+            color: #00f0ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>CREATE ACCESS</h1>
+        <p class="subtitle">REGISTER NEW ADMIN ACCOUNT</p>
+
+        <div class="input-group">
+            <label>FULL NAME</label>
+            <input type="text" id="fullName" placeholder="Enter your full name">
+        </div>
+
+        <div class="input-group">
+            <label>USERNAME</label>
+            <input type="text" id="username" placeholder="Choose a username">
+        </div>
+
+        <div class="input-group">
+            <label>PASSWORD</label>
+            <input type="password" id="password" placeholder="Create a strong password">
+        </div>
+
+        <div class="password-guide">
+            <strong>Password Requirements:</strong>
+            <ul>
+                <li>Minimum 8 characters</li>
+                <li>At least 1 uppercase letter</li>
+                <li>At least 1 number</li>
+                <li>At least 1 special character (@#$%^&+=!)</li>
+            </ul>
+        </div>
+
+        <button onclick="register()">REGISTER</button>
+        <div id="message" class="message"></div>
+
+        <div class="login-link">
+            Already registered? <a href="login.html">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        async function register() {
+            const fullName = document.getElementById("fullName").value.trim();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+            const messageDiv = document.getElementById("message");
+
+            if (!fullName || !username || !password) {
+                showMessage("Please fill in all fields", false);
+                return;
+            }
+
+            const strongPassword = /^(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$/;
+            if (!strongPassword.test(password)) {
+                showMessage("Password does not meet security requirements", false);
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:8080/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ fullName, username, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage("Registration successful! Redirecting...", true);
+                    setTimeout(() => {
+                        window.location.href = "login.html";
+                    }, 1500);
+                } else {
+                    showMessage(result.message, false);
+                }
+            } catch (e) {
+                showMessage("Server error. Backend may be offline.", false);
+            }
+        }
+
+        function showMessage(text, isSuccess) {
+            const messageDiv = document.getElementById("message");
+            messageDiv.style.display = "block";
+            messageDiv.textContent = text;
+            messageDiv.className = isSuccess ? "message success" : "message error";
+        }
+    </script>
+</body>
+</html>
