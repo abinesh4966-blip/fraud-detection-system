@@ -18,7 +18,15 @@ public class User {
     private String password;
 
     private String fullName;
-    private String role = "ADMIN";
+
+    private String role = "USER"; // USER or ADMIN
+
+    private String accountNumber;
+
+    private int failedAttempts = 0;
+
+    private LocalDateTime lockoutUntil;
+
     private LocalDateTime createdAt;
 
     public User() {}
@@ -45,6 +53,15 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public String getAccountNumber() { return accountNumber; }
+    public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
+
+    public int getFailedAttempts() { return failedAttempts; }
+    public void setFailedAttempts(int failedAttempts) { this.failedAttempts = failedAttempts; }
+
+    public LocalDateTime getLockoutUntil() { return lockoutUntil; }
+    public void setLockoutUntil(LocalDateTime lockoutUntil) { this.lockoutUntil = lockoutUntil; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

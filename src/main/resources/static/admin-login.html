@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login - Harmonia Bank</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh; background: #ebe6de; font-family: 'DM Sans', sans-serif;
+            color: #2c2926; display: flex; align-items: center; justify-content: center; padding: 24px;
+            animation: pageIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .shell {
+            width: 100%; max-width: 440px; background: #fff9f3; border: 1px solid #e5d8cc;
+            border-radius: 16px; overflow: hidden; box-shadow: 0 10px 28px rgba(44, 41, 38, 0.08);
+            animation: cardIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(18px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .top { background: #3a5649; color: #fff; padding: 22px 24px; }
+        .top h1 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 4px; }
+        .top p { font-size: 13px; color: #d5e4dc; }
+        .body { padding: 24px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #7a7168; margin-bottom: 6px; }
+        input {
+            width: 100%; padding: 12px 14px; border: 1px solid #e5d8cc; border-radius: 8px;
+            font-size: 14px; margin-bottom: 14px; font-family: inherit;
+        }
+        input:focus { outline: none; border-color: #4a6b5c; box-shadow: 0 0 0 3px rgba(74, 107, 92, 0.12); }
+        .captcha-box {
+            background: #f6efe7; border: 1px solid #e5d8cc; border-radius: 10px;
+            padding: 14px; margin-bottom: 14px;
+        }
+        .captcha-q { font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+        button {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            background: #3a5649; color: white; font-weight: 700; font-size: 14px;
+            cursor: pointer; font-family: inherit;
+        }
+        button:hover { background: #2d4439; }
+        .msg { margin-top: 12px; font-size: 13px; text-align: center; display: none; }
+        .msg.error { color: #b54a3c; display: block; }
+        .msg.ok { color: #3d7a5a; display: block; }
+        .links { margin-top: 16px; text-align: center; font-size: 13px; color: #7a7168; }
+        .links a { color: #3a5649; font-weight: 600; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="top">
+            <h1>Staff Access</h1>
+            <p>Authorized personnel only · Fraud Control Center</p>
+        </div>
+        <div class="body">
+            <div id="captchaSection">
+                <div class="captcha-box">
+                    <div class="captcha-q" id="captchaQuestion">Loading...</div>
+                    <label>Security verification</label>
+                    <input type="number" id="captchaAnswer" placeholder="Enter answer">
+                    <button type="button" onclick="verifyCaptcha()">Verify</button>
+                </div>
+                <div class="msg" id="captchaMsg"></div>
+            </div>
+            <form id="loginForm" style="display:none;" onsubmit="login(event)">
+                <label>Staff Username</label>
+                <input type="text" id="username" required>
+                <label>Password</label>
+                <input type="password" id="password" required>
+                <button type="submit">Authenticate</button>
+                <div class="msg" id="msg"></div>
+            </form>
+            <div class="links">
+                Need staff account? <a href="admin-register.html">Register admin</a><br>
+                <a href="access.html">Back to access options</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        let captchaA = 0, captchaB = 0;
+        function newCaptcha() {
+            captchaA = Math.floor(Math.random() * 9) + 2;
+            captchaB = Math.floor(Math.random() * 9) + 2;
+            document.getElementById("captchaQuestion").textContent = "Solve: " + captchaA + " + " + captchaB;
+            document.getElementById("captchaAnswer").value = "";
+        }
+        function verifyCaptcha() {
+            const ans = parseInt(document.getElementById("captchaAnswer").value, 10);
+            const msg = document.getElementById("captchaMsg");
+            if (ans === captchaA + captchaB) {
+                document.getElementById("captchaSection").style.display = "none";
+                document.getElementById("loginForm").style.display = "block";
+            } else {
+                msg.className = "msg error";
+                msg.textContent = "Verification failed. Try again.";
+                newCaptcha();
+            }
+        }
+        async function login(e) {
+            e.preventDefault();
+            const msg = document.getElementById("msg");
+            try {
+                const res = await fetch("http://localhost:8080/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: document.getElementById("username").value.trim(),
+                        password: document.getElementById("password").value,
+                        role: "ADMIN"
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    sessionStorage.setItem("isLoggedIn", "true");
+                    sessionStorage.setItem("role", data.role);
+                    sessionStorage.setItem("fullName", data.fullName || data.username);
+                    sessionStorage.setItem("username", data.username);
+                    sessionStorage.setItem("token", data.token || "");
+                    msg.className = "msg ok";
+                    msg.textContent = "Access granted...";
+                    setTimeout(() => window.location.href = "dashboard.html", 700);
+                } else {
+                    msg.className = "msg error";
+                    msg.textContent = data.message || "Authentication failed";
+                }
+            } catch {
+                msg.className = "msg error";
+                msg.textContent = "Server offline. Start Spring Boot first.";
+            }
+        }
+        newCaptcha();
+    </script>
+</body>
+</html>

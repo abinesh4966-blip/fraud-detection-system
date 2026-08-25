@@ -9,8 +9,7 @@ import java.util.List;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-
-    List<Transaction> findByAccountNumberAndTimestampAfter(String accountNumber, LocalDateTime timestamp);
-
     List<Transaction> findByAccountNumber(String accountNumber);
+    List<Transaction> findByAccountNumberAndTimestampAfter(String accountNumber, LocalDateTime timestamp);
+    void deleteByAccountNumber(String accountNumber);
 }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Risk Alerts - Harmonia Bank</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f4f1ea; color: #1b242c; font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+        .navbar { background: #fffcf7; border-bottom: 1px solid #e6e0d4; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { font-family: 'Fraunces', serif; color: #1f6f64; font-size: 18px; }
+        .nav-links { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { color: #1b242c; text-decoration: none; background: #f0ebe3; border: 1px solid #e6e0d4; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .logout-btn { background: #fde8e6 !important; border-color: #f0b4ae !important; color: #b42318 !important; }
+        .container { max-width: 900px; margin: 28px auto; padding: 0 18px; }
+        .card { background: #fffcf7; border: 1px solid #e6e0d4; border-radius: 14px; padding: 22px; }
+        h1 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 8px; }
+        .sub { color: #5c6b76; font-size: 14px; margin-bottom: 18px; }
+        .alert { background: #fde8e6; border: 1px solid #f0b4ae; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        .alert h3 { color: #b42318; font-size: 14px; margin-bottom: 6px; }
+        .alert p { font-size: 13px; color: #5c6b76; margin: 3px 0; }
+        .empty { text-align: center; color: #8a96a0; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>Harmonia Bank</h2>
+        <div class="nav-links">
+            <a href="user-dashboard.html">Dashboard</a>
+            <a href="user-transactions.html">My Transactions</a>
+            <a href="user-alerts.html">Alerts</a>
+            <a href="user-report.html">Report</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <h1>Risk Alerts</h1>
+            <p class="sub">Flagged transactions on your account</p>
+            <div id="content"><div class="empty">Loading...</div></div>
+        </div>
+    </div>
+    <script>
+        if (sessionStorage.getItem("isLoggedIn") !== "true" || sessionStorage.getItem("role") !== "USER") {
+            window.location.href = "access.html";
+        }
+        const accountNumber = sessionStorage.getItem("accountNumber") || "";
+        function logout() { sessionStorage.clear(); window.location.href = "access.html"; }
+
+        async function load() {
+            try {
+                const res = await fetch("http://localhost:8080/api/transactions/history");
+                const all = await res.json();
+                const alerts = all.filter(t =>
+                    String(t.accountNumber) === String(accountNumber) &&
+                    t.status === "SUSPICIOUS" &&
+                    !t.falsePositive
+                ).reverse();
+
+                if (alerts.length === 0) {
+                    document.getElementById("content").innerHTML = "<div class='empty'>No risk alerts. Your account looks safe.</div>";
+                    return;
+                }
+
+                let html = "";
+                alerts.forEach(tx => {
+                    const reasons = (tx.reasons && tx.reasons.length) ? tx.reasons.join(", ") : "Suspicious activity detected";
+                    html += `<div class="alert">
+                        <h3>Flagged · Risk ${tx.riskScore}%</h3>
+                        <p><strong>Amount:</strong> RM ${Number(tx.amount).toFixed(2)} · <strong>Type:</strong> ${tx.transactionType}</p>
+                        <p><strong>Location:</strong> ${tx.location}</p>
+                        <p><strong>Reason:</strong> ${reasons}</p>
+                        <p><strong>Time:</strong> ${tx.timestamp ? tx.timestamp.replace("T"," ").substring(0,19) : "-"}</p>
+                    </div>`;
+                });
+                document.getElementById("content").innerHTML = html;
+            } catch {
+                document.getElementById("content").innerHTML = "<div class='empty'>Error loading alerts.</div>";
+            }
+        }
+        load();
+    </script>
+</body>
+</html>

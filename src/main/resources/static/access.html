@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Access - Harmonia Bank</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            font-family: 'DM Sans', sans-serif;
+            color: #2c2926;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            background: #f2ebe3;
+        }
+        .bg {
+            position: absolute; inset: 0; z-index: 0;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(74, 107, 92, 0.18), transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(196, 132, 92, 0.16), transparent 40%),
+                linear-gradient(160deg, #f2ebe3 0%, #ebe3d8 50%, #e7f0eb 100%);
+        }
+        .bg-pattern {
+            position: absolute; inset: 0; z-index: 0; opacity: 0.35;
+            background-image:
+                linear-gradient(rgba(74, 107, 92, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(74, 107, 92, 0.06) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(circle at center, black 25%, transparent 80%);
+        }
+        .card {
+            position: relative; z-index: 2; width: 100%; max-width: 520px;
+            background: rgba(255, 249, 243, 0.92); border: 1px solid #e5d8cc;
+            border-radius: 22px; padding: 36px 28px;
+            box-shadow: 0 18px 50px rgba(44, 41, 38, 0.1);
+            backdrop-filter: blur(8px);
+            animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(24px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .brand { text-align: center; margin-bottom: 28px; }
+        .logo {
+            width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 18px;
+            background: linear-gradient(145deg, #4a6b5c, #3a5649); color: #fff;
+            display: grid; place-items: center; font-family: 'Fraunces', serif;
+            font-size: 26px; font-weight: 700;
+            box-shadow: 0 12px 28px rgba(74, 107, 92, 0.28);
+            animation: logoPop 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+        }
+        @keyframes logoPop {
+            from { opacity: 0; transform: scale(0.7); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        h1 {
+            font-family: 'Fraunces', serif; font-size: 26px; margin-bottom: 6px;
+            animation: fadeUp 0.6s ease 0.2s both;
+        }
+        .sub {
+            color: #7a7168; font-size: 14px;
+            animation: fadeUp 0.6s ease 0.3s both;
+        }
+        .option {
+            display: block; width: 100%; text-align: left; text-decoration: none; color: inherit;
+            border: 1px solid #e5d8cc; background: #fff; border-radius: 14px;
+            padding: 18px 16px; margin-bottom: 12px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            animation: fadeUp 0.6s ease both; opacity: 0;
+        }
+        .option:nth-of-type(1) { animation-delay: 0.4s; }
+        .option:nth-of-type(2) { animation-delay: 0.55s; }
+        .option:hover {
+            border-color: #4a6b5c; transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(74, 107, 92, 0.12);
+        }
+        .option.primary {
+            border-color: #4a6b5c;
+            background: linear-gradient(180deg, #f3f8f5, #fff);
+        }
+        .option h3 { font-size: 16px; margin-bottom: 4px; }
+        .option p { font-size: 13px; color: #7a7168; }
+        .badge {
+            display: inline-block; font-size: 11px; font-weight: 600; color: #4a6b5c;
+            background: rgba(74, 107, 92, 0.12); padding: 3px 8px; border-radius: 99px; margin-bottom: 8px;
+        }
+        .footer {
+            text-align: center; margin-top: 18px; font-size: 12px; color: #a89b8f;
+            animation: fadeUp 0.6s ease 0.7s both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="bg-pattern"></div>
+    <div class="card">
+        <div class="brand">
+            <div class="logo">H</div>
+            <h1>Welcome back</h1>
+            <p class="sub">Choose how you want to sign in</p>
+        </div>
+        <a class="option primary" href="user-login.html">
+            <div class="badge">Recommended for customers</div>
+            <h3>Customer Login</h3>
+            <p>View transactions, alerts, and report suspicious activity</p>
+        </a>
+        <a class="option" href="admin-login.html">
+            <h3>Staff / Admin Login</h3>
+            <p>Fraud monitoring, live detection, and system controls</p>
+        </a>
+        <div class="footer">Harmonia Bank · Secure access portal</div>
+    </div>
+</body>
+</html>
