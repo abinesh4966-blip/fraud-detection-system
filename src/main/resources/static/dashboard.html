@@ -130,6 +130,9 @@
                 <span class="live-status" id="liveStatus">Live Monitoring: Offline</span>
                 <button class="btn btn-start" id="startBtn" onclick="startLiveMonitoring()">Start Live</button>
                 <button class="btn btn-stop" id="stopBtn" onclick="stopLiveMonitoring()" style="display:none;">Stop</button>
+                <button class="btn" onclick="resetEntireSystem()" style="background:var(--danger); color:white;">
+                    Reset Entire System
+                </button>
             </div>
         </div>
 
@@ -469,23 +472,97 @@
         }
 
         async function clearAllData() {
-    if (!confirm("Delete ALL transactions and reset ML? This cannot be undone.")) return;
-    try {
-        const res = await fetch("http://localhost:8080/api/transactions/clear-all", { method: "DELETE" });
-        const data = await res.json();
-        alert(data.message + " (deleted: " + data.deleted + ")");
-        document.getElementById("liveFeed").innerHTML = '<div class="empty">Waiting for live transactions...</div>';
-        document.getElementById("uploadFeed").innerHTML = '<div class="empty">Upload a CSV file to begin sequential verification.</div>';
-        liveEventCount = 0;
-        uploadEventCount = 0;
-        document.getElementById("liveCount").textContent = "0 events";
-        document.getElementById("uploadCount").textContent = "0 processed";
-        stopLiveMonitoring();
-        loadDashboard();
-    } catch (e) {
-        alert("Failed to clear data. Is the server running?");
-    }
-}S
+            if (!confirm("Delete ALL transactions and reset ML? This cannot be undone.")) return;
+            try {
+                const res = await fetch("http://localhost:8080/api/transactions/clear-all", { method: "DELETE" });
+                const data = await res.json();
+                alert(data.message + " (deleted: " + data.deleted + ")");
+                document.getElementById("liveFeed").innerHTML = '<div class="empty">Waiting for live transactions...</div>';
+                document.getElementById("uploadFeed").innerHTML = '<div class="empty">Upload a CSV file to begin sequential verification.</div>';
+                liveEventCount = 0;
+                uploadEventCount = 0;
+                document.getElementById("liveCount").textContent = "0 events";
+                document.getElementById("uploadCount").textContent = "0 processed";
+                stopLiveMonitoring();
+                loadDashboard();
+            } catch (e) {
+                alert("Failed to clear data. Is the server running?");
+            }
+        }
+
+        async function resetEntireSystem() {
+            const confirmation = confirm(
+                "⚠️ RESET ENTIRE SYSTEM\n\n" +
+                "This will permanently delete:\n\n" +
+                "• ALL registered users\n" +
+                "• ALL transactions\n" +
+                "• ALL fraud history\n" +
+                "• ML training data\n\n" +
+                "This action CANNOT be undone.\n\n" +
+                "Are you absolutely sure?"
+            );
+
+            if (!confirmation) return;
+
+            const finalConfirmation = confirm(
+                "FINAL WARNING\n\n" +
+                "You are about to delete EVERY USER and EVERY TRANSACTION.\n\n" +
+                "Press OK to permanently reset the system."
+            );
+
+            if (!finalConfirmation) return;
+
+            stopLiveMonitoring();
+
+            try {
+                const res = await fetch(
+                    "http://localhost:8080/api/transactions/admin/reset-all",
+                    { method: "DELETE" }
+                );
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    alert("System reset failed:\n\n" + data.message);
+                    return;
+                }
+
+                document.getElementById("totalCount").textContent = "0";
+                document.getElementById("normalCount").textContent = "0";
+                document.getElementById("suspiciousCount").textContent = "0";
+                document.getElementById("falsePositiveCount").textContent = "0";
+
+                document.getElementById("liveFeed").innerHTML =
+                    '<div class="empty">Waiting for live transactions...</div>';
+
+                document.getElementById("uploadFeed").innerHTML =
+                    '<div class="empty">Upload a CSV file to begin sequential verification.</div>';
+
+                liveEventCount = 0;
+                uploadEventCount = 0;
+
+                document.getElementById("liveCount").textContent = "0 events";
+                document.getElementById("uploadCount").textContent = "0 processed";
+
+                alert(
+                    "SYSTEM RESET COMPLETE\n\n" +
+                    "Users deleted: " + data.usersDeleted + "\n" +
+                    "Transactions deleted: " + data.transactionsDeleted + "\n\n" +
+                    "All ML data has also been reset.\n\n" +
+                    "You will now be returned to the login page."
+                );
+
+                sessionStorage.clear();
+                window.location.href = "access.html";
+            } catch (error) {
+                console.error(error);
+                alert(
+                    "Unable to reset the system.\n\n" +
+                    "Make sure the Spring Boot server is running."
+                );
+            }
+        }
+
         loadDashboard();
     </script>
 </body>
