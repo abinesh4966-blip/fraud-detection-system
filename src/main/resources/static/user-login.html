@@ -43,79 +43,146 @@
         input:focus { outline: none; border-color: #4a6b5c; box-shadow: 0 0 0 3px rgba(74, 107, 92, 0.12); }
         .captcha-box {
             background: #f6efe7; border: 1px solid #e5d8cc; border-radius: 12px;
-            padding: 14px; margin-bottom: 16px;
+            padding: 14px; margin-bottom: 12px;
         }
-        .captcha-q { font-weight: 600; margin-bottom: 8px; font-size: 14px; }
-        button {
+        .captcha-label { font-size: 12px; font-weight: 600; color: #7a7168; margin-bottom: 8px; }
+        #captchaCanvas {
+            width: 100%; max-width: 240px; height: 64px;
+            border-radius: 8px; border: 1px solid #e5d8cc; background: #f3ebe2;
+            cursor: pointer; display: block;
+        }
+        .captcha-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+        .captcha-row input { margin-bottom: 0; flex: 1; }
+        .refresh-btn {
+            border: 1px solid #e5d8cc; background: #fff; border-radius: 10px;
+            width: 44px; height: 44px; cursor: pointer; font-size: 18px; color: #4a6b5c;
+        }
+        button.primary {
             width: 100%; padding: 13px; border: none; border-radius: 10px;
-            background: #4a6b5c; color: white; font-weight: 700; font-size: 14px;
-            cursor: pointer; font-family: inherit;
+            background: #4a6b5c; color: #fff; font-weight: 700; font-size: 14px;
+            cursor: pointer; font-family: inherit; margin-top: 6px;
         }
-        button:hover { background: #3a5649; }
-        .msg { margin-top: 12px; font-size: 13px; text-align: center; display: none; }
-        .msg.error { color: #b54a3c; display: block; }
-        .msg.ok { color: #3d7a5a; display: block; }
-        .links { margin-top: 18px; text-align: center; font-size: 13px; color: #7a7168; }
-        .links a { color: #4a6b5c; text-decoration: none; font-weight: 600; }
-        .guide { font-size: 12px; color: #a89b8f; margin: -6px 0 14px; line-height: 1.4; }
+        button.primary:hover { background: #3a5649; }
+        .msg { margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; }
+        .msg.error { color: #b54a3c; }
+        .msg.ok { color: #3d7a5a; }
+        .links { margin-top: 16px; text-align: center; font-size: 13px; color: #7a7168; }
+        .links a { color: #4a6b5c; font-weight: 600; text-decoration: none; }
+        #loginForm { display: none; }
     </style>
 </head>
 <body>
     <div class="box">
         <div class="logo">H</div>
         <h1>Customer Login</h1>
-        <p class="sub">Access your account securely</p>
+        <p class="sub">Secure access to your Harmonia account</p>
 
         <div id="captchaSection">
             <div class="captcha-box">
-                <div class="captcha-q" id="captchaQuestion">Loading...</div>
-                <label>Security check</label>
-                <input type="number" id="captchaAnswer" placeholder="Enter the answer">
-                <button type="button" onclick="verifyCaptcha()">Continue</button>
+                <div class="captcha-label">Security check — enter the code shown</div>
+                <canvas id="captchaCanvas" width="240" height="64" title="Click to refresh"></canvas>
+                <div class="captcha-row">
+                    <input type="text" id="captchaAnswer" placeholder="Enter the code" maxlength="6" autocomplete="off">
+                    <button type="button" class="refresh-btn" onclick="newCaptcha()" title="New code">↻</button>
+                </div>
+                <button type="button" class="primary" onclick="verifyCaptcha()">Verify & Continue</button>
             </div>
             <div class="msg" id="captchaMsg"></div>
         </div>
 
-        <form id="loginForm" style="display:none;" onsubmit="login(event)">
+        <form id="loginForm" onsubmit="login(event)">
             <label>Username</label>
-            <input type="text" id="username" required>
+            <input type="text" id="username" required autocomplete="username">
             <label>Password</label>
-            <input type="password" id="password" required>
-            <div class="guide">Min 8 chars, uppercase, number, special character</div>
-            <button type="submit">Sign in</button>
+            <input type="password" id="password" required autocomplete="current-password">
+            <button type="submit" class="primary">Sign In</button>
             <div class="msg" id="msg"></div>
         </form>
 
         <div class="links">
-            New customer? <a href="user-register.html">Create account</a><br>
-            <a href="access.html">Back to access options</a>
+            No account? <a href="user-register.html">Register</a> ·
+            <a href="access.html">Back</a>
         </div>
     </div>
 
     <script>
-        let captchaA = 0, captchaB = 0;
+        let captchaCode = "";
+
+        function randomChar() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            return chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
         function newCaptcha() {
-            captchaA = Math.floor(Math.random() * 9) + 2;
-            captchaB = Math.floor(Math.random() * 9) + 2;
-            document.getElementById("captchaQuestion").textContent = "What is " + captchaA + " + " + captchaB + "?";
-            document.getElementById("captchaAnswer").value = "";
-        }
-        function verifyCaptcha() {
-            const ans = parseInt(document.getElementById("captchaAnswer").value, 10);
-            const msg = document.getElementById("captchaMsg");
-            if (ans === captchaA + captchaB) {
-                document.getElementById("captchaSection").style.display = "none";
-                document.getElementById("loginForm").style.display = "block";
-            } else {
-                msg.className = "msg error";
-                msg.textContent = "Incorrect answer. Try again.";
-                newCaptcha();
+            const canvas = document.getElementById("captchaCanvas");
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width;
+            const h = canvas.height;
+
+            captchaCode = "";
+            for (let i = 0; i < 5; i++) captchaCode += randomChar();
+
+            ctx.fillStyle = "#f3ebe2";
+            ctx.fillRect(0, 0, w, h);
+
+            for (let i = 0; i < 6; i++) {
+                ctx.strokeStyle = "rgba(74,107,92," + (0.15 + Math.random() * 0.25) + ")";
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * w, Math.random() * h);
+                ctx.lineTo(Math.random() * w, Math.random() * h);
+                ctx.stroke();
             }
+
+            for (let i = 0; i < 40; i++) {
+                ctx.fillStyle = "rgba(44,41,38," + (0.08 + Math.random() * 0.15) + ")";
+                ctx.beginPath();
+                ctx.arc(Math.random() * w, Math.random() * h, 1 + Math.random() * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const colors = ["#4a6b5c", "#2c2926", "#c4845c", "#3d7a5a", "#5c4a3a"];
+            for (let i = 0; i < captchaCode.length; i++) {
+                const ch = captchaCode.charAt(i);
+                const x = 28 + i * 40;
+                const y = 40 + (Math.random() * 10 - 5);
+                const angle = (Math.random() * 0.5) - 0.25;
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.font = "bold " + (26 + Math.floor(Math.random() * 4)) + "px DM Sans, Arial";
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fillText(ch, 0, 0);
+                ctx.restore();
+            }
+
+            document.getElementById("captchaAnswer").value = "";
+            document.getElementById("captchaMsg").textContent = "";
+            document.getElementById("captchaMsg").className = "msg";
         }
+
+        function verifyCaptcha() {
+            const ans = (document.getElementById("captchaAnswer").value || "").trim().toUpperCase();
+            const msg = document.getElementById("captchaMsg");
+            if (!ans) {
+                msg.className = "msg error";
+                msg.textContent = "Enter the security code.";
+                return;
+            }
+            if (ans !== captchaCode) {
+                msg.className = "msg error";
+                msg.textContent = "Incorrect code. New code generated.";
+                newCaptcha();
+                return;
+            }
+            msg.className = "msg ok";
+            msg.textContent = "Verified.";
+            document.getElementById("captchaSection").style.display = "none";
+            document.getElementById("loginForm").style.display = "block";
+        }
+
         async function login(e) {
             e.preventDefault();
             const msg = document.getElementById("msg");
-            msg.className = "msg"; msg.textContent = "";
             try {
                 const res = await fetch("http://localhost:8080/api/auth/login", {
                     method: "POST",
@@ -129,7 +196,7 @@
                 const data = await res.json();
                 if (data.success) {
                     sessionStorage.setItem("isLoggedIn", "true");
-                    sessionStorage.setItem("role", data.role);
+                    sessionStorage.setItem("role", data.role || "USER");
                     sessionStorage.setItem("fullName", data.fullName || data.username);
                     sessionStorage.setItem("username", data.username);
                     sessionStorage.setItem("accountNumber", data.accountNumber || "");
@@ -143,9 +210,11 @@
                 }
             } catch {
                 msg.className = "msg error";
-                msg.textContent = "Cannot connect to server. Is Spring Boot running?";
+                msg.textContent = "Server offline. Start Spring Boot first.";
             }
         }
+
+        document.getElementById("captchaCanvas").addEventListener("click", newCaptcha);
         newCaptcha();
     </script>
 </body>

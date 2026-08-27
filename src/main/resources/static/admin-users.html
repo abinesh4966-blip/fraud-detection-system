@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management - Harmonia Bank</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        :root {
+            --bg: #f2ebe3; --surface: #fff9f3; --border: #e5d8cc;
+            --text: #2c2926; --muted: #7a7168; --accent: #4a6b5c;
+            --clay: #c4845c; --danger: #b54a3c; --success: #3d7a5a;
+            --warn: #a67c2a; --soft: #f6efe7;
+        }
+        body.dark {
+            --bg: #1c1a18; --surface: #2a2623; --border: #3d3732;
+            --text: #f0e8df; --muted: #a89b8f; --accent: #8fbfa8;
+            --clay: #e0a882; --danger: #e07a6e; --success: #7dba9a;
+            --warn: #e0b45c; --soft: #342f2b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+        .navbar {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 14px 28px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .navbar h2 { font-family: 'Fraunces', serif; color: var(--accent); font-size: 18px; }
+        .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .nav-links a, .nav-links button {
+            color: var(--text); text-decoration: none; background: var(--soft);
+            border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;
+            font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+        }
+        .logout-btn { color: var(--danger) !important; }
+        .container { max-width: 1300px; margin: 24px auto; padding: 0 18px; }
+        h1 { font-family: 'Fraunces', serif; font-size: 26px; margin-bottom: 6px; }
+        .sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+        .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 16px;
+        }
+        .card h3 { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+        .card .n { font-family: 'Fraunces', serif; font-size: 24px; color: var(--accent); font-weight: 600; }
+        .card.warn .n { color: var(--danger); }
+        .toolbar {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; align-items: center;
+        }
+        .toolbar input, .toolbar select {
+            background: var(--surface); border: 1px solid var(--border); color: var(--text);
+            border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: inherit;
+        }
+        .toolbar button {
+            background: var(--accent); color: #fff; border: none; border-radius: 8px;
+            padding: 9px 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+        }
+        .panel {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 11px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--muted); font-size: 11px; background: var(--soft); }
+        .badge {
+            display: inline-block; padding: 3px 8px; border-radius: 999px;
+            font-size: 11px; font-weight: 700;
+        }
+        .b-clean { background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--success); }
+        .b-low { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+        .b-med { background: color-mix(in srgb, var(--clay) 22%, transparent); color: var(--clay); }
+        .b-high { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); }
+        .b-lock { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); }
+        .b-ok { background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--success); }
+        .btn-sm {
+            background: var(--soft); border: 1px solid var(--border); color: var(--text);
+            border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: 600;
+            cursor: pointer; font-family: inherit;
+        }
+        .btn-sm.unlock { color: var(--accent); border-color: var(--accent); }
+        .empty { text-align: center; color: var(--muted); padding: 40px; }
+        @media (max-width: 900px) { .cards { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>Harmonia Bank · Admin</h2>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="admin-users.html">Users</a>
+            <a href="history.html">History</a>
+            <a href="admin-reports.html">Reports</a>
+            <button type="button" onclick="toggleTheme()" id="themeBtn">Dark Mode</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>User Management</h1>
+        <p class="sub">Accounts, activity, and detection pressure per customer.</p>
+
+        <div class="cards">
+            <div class="card"><h3>Total Users</h3><div class="n" id="sTotal">0</div></div>
+            <div class="card"><h3>Active (24h)</h3><div class="n" id="sActive">0</div></div>
+            <div class="card"><h3>Locked</h3><div class="n" id="sLocked">0</div></div>
+            <div class="card warn"><h3>Flagged Tx (system)</h3><div class="n" id="sFlagged">0</div></div>
+        </div>
+
+        <div class="toolbar">
+            <input type="text" id="searchBox" placeholder="Search name, username, account..." oninput="renderTable()">
+            <select id="roleFilter" onchange="renderTable()">
+                <option value="ALL">All roles</option>
+                <option value="USER">USER</option>
+                <option value="ADMIN">ADMIN</option>
+            </select>
+            <select id="riskFilter" onchange="renderTable()">
+                <option value="ALL">All risk bands</option>
+                <option value="HIGH">HIGH detections</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="LOW">LOW</option>
+                <option value="CLEAN">CLEAN</option>
+            </select>
+            <button type="button" onclick="loadAll()">Refresh</button>
+        </div>
+
+        <div class="panel">
+            <div id="tableWrap"><div class="empty">Loading users...</div></div>
+        </div>
+    </div>
+
+    <script>
+        if (sessionStorage.getItem("isLoggedIn") !== "true" || sessionStorage.getItem("role") !== "ADMIN") {
+            window.location.href = "access.html";
+        }
+
+        function applyTheme() {
+            const dark = localStorage.getItem("theme") === "dark";
+            document.body.classList.toggle("dark", dark);
+            document.getElementById("themeBtn").textContent = dark ? "Light Mode" : "Dark Mode";
+        }
+        function toggleTheme() {
+            localStorage.setItem("theme", document.body.classList.contains("dark") ? "light" : "dark");
+            applyTheme();
+        }
+        applyTheme();
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "access.html";
+        }
+
+        let users = [];
+
+        function fmtTime(v) {
+            if (!v) return "-";
+            return String(v).replace("T", " ").substring(0, 19);
+        }
+
+        function bandClass(b) {
+            if (b === "HIGH") return "b-high";
+            if (b === "MEDIUM") return "b-med";
+            if (b === "LOW") return "b-low";
+            return "b-clean";
+        }
+
+        async function loadAll() {
+            try {
+                const [sumRes, listRes] = await Promise.all([
+                    fetch("http://localhost:8080/api/admin/users/summary"),
+                    fetch("http://localhost:8080/api/admin/users")
+                ]);
+                const sum = await sumRes.json();
+                users = await listRes.json();
+
+                document.getElementById("sTotal").textContent = sum.totalUsers;
+                document.getElementById("sActive").textContent = sum.activeLast24h;
+                document.getElementById("sLocked").textContent = sum.lockedAccounts;
+                document.getElementById("sFlagged").textContent = sum.flaggedTransactions;
+                renderTable();
+            } catch (e) {
+                document.getElementById("tableWrap").innerHTML =
+                    "<div class='empty'>Could not load users. Is Spring Boot running?</div>";
+            }
+        }
+
+        function renderTable() {
+            const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
+            const role = document.getElementById("roleFilter").value;
+            const risk = document.getElementById("riskFilter").value;
+
+            const filtered = users.filter(u => {
+                if (role !== "ALL" && String(u.role).toUpperCase() !== role) return false;
+                if (risk !== "ALL" && u.riskBand !== risk) return false;
+                if (!q) return true;
+                const blob = [u.username, u.fullName, u.accountNumber, u.activity]
+                    .map(x => String(x || "").toLowerCase()).join(" ");
+                return blob.includes(q);
+            });
+
+            if (filtered.length === 0) {
+                document.getElementById("tableWrap").innerHTML = "<div class='empty'>No users match filters.</div>";
+                return;
+            }
+
+            let html = `<table>
+                <thead><tr>
+                    <th>User</th><th>Role</th><th>Account</th><th>Activity</th>
+                    <th>Tx</th><th>Flagged</th><th>Rate</th><th>Max risk</th>
+                    <th>Band</th><th>Status</th><th>Action</th>
+                </tr></thead><tbody>`;
+
+            filtered.forEach(u => {
+                html += `<tr>
+                    <td>
+                        <strong>${u.fullName || u.username}</strong><br>
+                        <span style="color:var(--muted);font-size:12px;">@${u.username}</span>
+                    </td>
+                    <td>${u.role}</td>
+                    <td>${u.accountNumber || "-"}</td>
+                    <td>
+                        ${u.activity}<br>
+                        <span style="color:var(--muted);font-size:11px;">Last login: ${fmtTime(u.lastLoginAt)}</span>
+                    </td>
+                    <td>${u.txTotal}</td>
+                    <td style="color:${u.txFlagged > 0 ? "var(--danger)" : "inherit"};font-weight:700;">${u.txFlagged}</td>
+                    <td>${u.flaggedRate}%</td>
+                    <td>${u.maxRisk}%</td>
+                    <td><span class="badge ${bandClass(u.riskBand)}">${u.riskBand}</span></td>
+                    <td>${u.locked
+                        ? `<span class="badge b-lock">LOCKED</span>`
+                        : `<span class="badge b-ok">OK</span>`}</td>
+                    <td>${u.locked
+                        ? `<button class="btn-sm unlock" onclick="unlockUser(${u.id})">Unlock</button>`
+                        : `-`}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table>`;
+            document.getElementById("tableWrap").innerHTML = html;
+        }
+
+        async function unlockUser(id) {
+            if (!confirm("Unlock this account?")) return;
+            try {
+                const res = await fetch("http://localhost:8080/api/admin/users/" + id + "/unlock", { method: "PUT" });
+                const data = await res.json();
+                alert(data.message || "Done");
+                loadAll();
+            } catch (e) {
+                alert("Unlock failed");
+            }
+        }
+
+        loadAll();
+    </script>
+</body>
+</html>

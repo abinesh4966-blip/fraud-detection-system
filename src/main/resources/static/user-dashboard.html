@@ -221,7 +221,7 @@
 
         async function loadUserData() {
             try {
-                const res = await fetch("http://localhost:8080/api/transactions/history");
+                const res = await fetch("http://localhost:8080/api/transactions/my-history?accountNumber=" + encodeURIComponent(accountNumber));
                 const all = await res.json();
                 const mine = accountNumber
                     ? all.filter(t => String(t.accountNumber) === String(accountNumber))

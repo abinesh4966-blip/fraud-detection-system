@@ -169,9 +169,10 @@ public class AuthController {
             return ResponseEntity.status(401).body(response);
         }
 
-        // Success — reset attempts
+// Success — reset attempts + track last login
         user.setFailedAttempts(0);
         user.setLockoutUntil(null);
+        user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
 
         String token = UUID.randomUUID().toString();

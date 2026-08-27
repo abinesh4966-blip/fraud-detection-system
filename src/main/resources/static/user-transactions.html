@@ -382,7 +382,8 @@
         try {
 
             const response = await fetch(
-                "http://localhost:8080/api/transactions/history"
+                "http://localhost:8080/api/transactions/my-history?accountNumber=" +
+                encodeURIComponent(accountNumber)
             );
 
 

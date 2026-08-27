@@ -20,6 +20,9 @@ public class Transaction {
     private Integer riskScore;
     private String status;
 
+    /** LOW | MODERATE | HIGH | CRITICAL */
+    private String riskLevel;
+
     private boolean falsePositive = false;
 
     @Transient
@@ -35,7 +38,6 @@ public class Transaction {
         this.timestamp = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -59,6 +61,9 @@ public class Transaction {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getRiskLevel() { return riskLevel; }
+    public void setRiskLevel(String riskLevel) { this.riskLevel = riskLevel; }
 
     public boolean isFalsePositive() { return falsePositive; }
     public void setFalsePositive(boolean falsePositive) { this.falsePositive = falsePositive; }

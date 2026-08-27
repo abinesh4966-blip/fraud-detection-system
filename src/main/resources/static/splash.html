@@ -4,203 +4,242 @@
     <meta charset="UTF-8">
     <title>Harmonia Bank</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@500;600&display=swap');
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f2ebe3;
+            overflow: hidden;
+            background: #e8e0d6;
             font-family: 'DM Sans', sans-serif;
             color: #2c2926;
-            overflow: hidden;
-            position: relative;
         }
-        .blob {
+
+        .stage {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            place-items: center;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 45%, #f7f1ea 0%, #e8e0d6 55%, #d9cfc3 100%);
+        }
+
+        /* Soft base glow */
+        .glow {
+            position: absolute;
+            width: 55vmin;
+            height: 55vmin;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,249,243,0.9) 0%, rgba(232,224,214,0) 70%);
+            filter: blur(8px);
+            animation: pulseGlow 4s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.75; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+
+        /* Mist layers */
+        .mist {
             position: absolute;
             border-radius: 50%;
-            filter: blur(40px);
-            opacity: 0.45;
-            animation: float 8s ease-in-out infinite;
-            z-index: 0;
+            filter: blur(28px);
+            opacity: 0.55;
+            will-change: transform, opacity;
+            z-index: 2;
         }
-        .blob-1 { width: 320px; height: 320px; background: #c4845c; top: -80px; left: -60px; }
-        .blob-2 { width: 280px; height: 280px; background: #4a6b5c; bottom: -90px; right: -40px; animation-delay: 1.5s; }
-        .blob-3 { width: 180px; height: 180px; background: #e0b45c; top: 40%; left: 70%; opacity: 0.25; animation-delay: 3s; }
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(20px, -25px) scale(1.06); }
+
+        .mist-1 {
+            width: 70vmin; height: 42vmin;
+            background: rgba(255, 249, 243, 0.75);
+            top: 8%; left: -10%;
+            animation: swirl1 5.5s ease-in-out forwards;
         }
-        .grid {
-            position: absolute; inset: 0; z-index: 0;
-            background-image:
-                linear-gradient(rgba(74, 107, 92, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(74, 107, 92, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-            mask-image: radial-gradient(circle at center, black 30%, transparent 75%);
+        .mist-2 {
+            width: 60vmin; height: 38vmin;
+            background: rgba(200, 184, 168, 0.45);
+            bottom: 5%; right: -8%;
+            animation: swirl2 5.5s ease-in-out forwards;
         }
-        .wrap { position: relative; z-index: 2; text-align: center; max-width: 480px; padding: 24px; }
-        .logo-ring {
-            width: 96px; height: 96px; margin: 0 auto 22px; border-radius: 28px;
-            background: linear-gradient(145deg, #4a6b5c, #3a5649); color: #fff;
-            display: grid; place-items: center; font-family: 'Fraunces', serif;
-            font-size: 36px; font-weight: 700;
-            box-shadow: 0 16px 40px rgba(74, 107, 92, 0.28);
-            animation: logoIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both, pulse 2.4s ease-in-out 1s infinite;
+        .mist-3 {
+            width: 50vmin; height: 50vmin;
+            background: rgba(143, 175, 158, 0.28);
+            top: 20%; right: 5%;
+            animation: swirl3 5.5s ease-in-out forwards;
+        }
+        .mist-4 {
+            width: 55vmin; height: 36vmin;
+            background: rgba(196, 132, 92, 0.18);
+            bottom: 18%; left: 0%;
+            animation: swirl4 5.5s ease-in-out forwards;
+        }
+        .mist-5 {
+            width: 40vmin; height: 40vmin;
+            background: rgba(255, 255, 255, 0.35);
+            top: 35%; left: 30%;
+            animation: swirl5 5.5s ease-in-out forwards;
+        }
+
+        /* Drift inward toward center */
+        @keyframes swirl1 {
+            0%   { transform: translate(-25%, -15%) rotate(0deg) scale(1.25); opacity: 0.35; }
+            55%  { transform: translate(8%, 12%) rotate(25deg) scale(1); opacity: 0.65; }
+            100% { transform: translate(35%, 30%) rotate(40deg) scale(0.55); opacity: 0; }
+        }
+        @keyframes swirl2 {
+            0%   { transform: translate(25%, 20%) rotate(0deg) scale(1.3); opacity: 0.3; }
+            55%  { transform: translate(-10%, -8%) rotate(-30deg) scale(1); opacity: 0.6; }
+            100% { transform: translate(-30%, -25%) rotate(-50deg) scale(0.5); opacity: 0; }
+        }
+        @keyframes swirl3 {
+            0%   { transform: translate(30%, -20%) rotate(0deg) scale(1.2); opacity: 0.25; }
+            55%  { transform: translate(-5%, 10%) rotate(35deg) scale(0.95); opacity: 0.5; }
+            100% { transform: translate(-25%, 20%) rotate(55deg) scale(0.45); opacity: 0; }
+        }
+        @keyframes swirl4 {
+            0%   { transform: translate(-20%, 25%) rotate(0deg) scale(1.25); opacity: 0.28; }
+            55%  { transform: translate(12%, -5%) rotate(-20deg) scale(1); opacity: 0.55; }
+            100% { transform: translate(28%, -28%) rotate(-40deg) scale(0.5); opacity: 0; }
+        }
+        @keyframes swirl5 {
+            0%   { transform: translate(10%, 5%) scale(1.4); opacity: 0.2; }
+            50%  { transform: translate(0%, 0%) scale(1); opacity: 0.55; }
+            100% { transform: translate(0%, 0%) scale(0.3); opacity: 0; }
+        }
+
+        /* Center brand content */
+        .content {
             position: relative;
+            z-index: 5;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.92);
+            animation: revealContent 1.4s ease forwards 2.6s;
         }
-        .logo-ring::after {
-            content: ""; position: absolute; inset: -10px; border-radius: 34px;
-            border: 2px solid rgba(74, 107, 92, 0.25);
-            animation: ringPulse 2.4s ease-in-out 1s infinite;
+
+        @keyframes revealContent {
+            0%   { opacity: 0; transform: scale(0.92) translateY(12px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
-        @keyframes logoIn {
-            from { opacity: 0; transform: scale(0.6) rotate(-8deg); }
-            to { opacity: 1; transform: scale(1) rotate(0); }
+
+        .mark {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 18px;
+            border-radius: 22px;
+            background: linear-gradient(145deg, #4a6b5c, #3a5649);
+            color: #fff9f3;
+            display: grid;
+            place-items: center;
+            font-family: 'Fraunces', serif;
+            font-size: 30px;
+            font-weight: 600;
+            box-shadow: 0 12px 30px rgba(74, 107, 92, 0.25);
         }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.04); }
-        }
-        @keyframes ringPulse {
-            0%, 100% { opacity: 0.4; transform: scale(1); }
-            50% { opacity: 0; transform: scale(1.12); }
-        }
+
         h1 {
-            font-family: 'Fraunces', serif; font-size: 40px; font-weight: 700;
-            margin-bottom: 10px; letter-spacing: -0.02em;
-            animation: fadeUp 0.8s ease 0.25s both;
+            font-family: 'Fraunces', serif;
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #2c2926;
+            margin-bottom: 8px;
         }
-        .tagline {
-            color: #7a7168; font-size: 15px; line-height: 1.5; margin-bottom: 28px;
-            animation: fadeUp 0.8s ease 0.4s both;
+
+        p {
+            color: #7a7168;
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 22px;
         }
-        .pills {
-            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-            margin-bottom: 32px; animation: fadeUp 0.8s ease 0.55s both;
+
+        .line {
+            width: 0;
+            height: 2px;
+            margin: 0 auto 18px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, transparent, #4a6b5c, transparent);
+            animation: growLine 1s ease forwards 3.2s;
         }
-        .pill {
-            background: #fff9f3; border: 1px solid #e5d8cc; color: #4a6b5c;
-            font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 999px;
-            box-shadow: 0 4px 12px rgba(44, 41, 38, 0.04);
+
+        @keyframes growLine {
+            from { width: 0; }
+            to { width: 120px; }
         }
-        .pill span { color: #c4845c; margin-right: 4px; }
-        .loader-card {
-            background: #fff9f3; border: 1px solid #e5d8cc; border-radius: 16px;
-            padding: 16px 18px; box-shadow: 0 10px 30px rgba(44, 41, 38, 0.06);
-            animation: fadeUp 0.8s ease 0.7s both;
+
+        .hint {
+            font-size: 12px;
+            color: #9a9086;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeHint 1s ease forwards 3.6s;
         }
-        .status-row {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; font-size: 12px; color: #7a7168;
+
+        @keyframes fadeHint {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .status-text { font-weight: 600; color: #4a6b5c; }
-        .bar { width: 100%; height: 6px; background: #e5d8cc; border-radius: 99px; overflow: hidden; }
-        .fill {
-            height: 100%; width: 0; border-radius: 99px;
-            background: linear-gradient(90deg, #4a6b5c, #c4845c);
-            animation: load 3.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+        /* Final veil lifts away */
+        .veil {
+            position: absolute;
+            inset: 0;
+            background: #e8e0d6;
+            z-index: 8;
+            opacity: 1;
+            animation: liftVeil 1.2s ease forwards 0.2s;
+            pointer-events: none;
         }
-        @keyframes load {
-            0% { width: 0; }
-            30% { width: 35%; }
-            60% { width: 72%; }
-            100% { width: 100%; }
+
+        @keyframes liftVeil {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
         }
-        .steps {
-            display: flex; justify-content: space-between; margin-top: 12px;
-            font-size: 11px; color: #a89b8f;
+
+        /* Exit fade to next page */
+        body.leaving .stage {
+            animation: exitOut 0.9s ease forwards;
         }
-        .steps span.active { color: #4a6b5c; font-weight: 600; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        body.out { animation: fadeOut 0.7s ease forwards; }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-        .dot {
-            position: absolute; width: 6px; height: 6px; border-radius: 50%;
-            background: #c4845c; opacity: 0.35; animation: twinkle 3s ease-in-out infinite; z-index: 1;
-        }
-        .dot:nth-child(1) { top: 18%; left: 15%; }
-        .dot:nth-child(2) { top: 28%; right: 18%; background: #4a6b5c; animation-delay: 0.8s; }
-        .dot:nth-child(3) { bottom: 22%; left: 22%; animation-delay: 1.4s; }
-        .dot:nth-child(4) { bottom: 30%; right: 25%; background: #4a6b5c; animation-delay: 2s; }
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.4); }
+
+        @keyframes exitOut {
+            to { opacity: 0; transform: scale(1.03); }
         }
     </style>
 </head>
 <body>
-    <div class="grid"></div>
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
+    <div class="stage">
+        <div class="veil"></div>
 
-    <div class="wrap">
-        <div class="logo-ring">H</div>
-        <h1>Harmonia Bank</h1>
-        <p class="tagline">
-            Secure banking with intelligent fraud protection.<br>
-            Built to keep every transaction safer.
-        </p>
-        <div class="pills">
-            <div class="pill"><span>●</span> Real-time detection</div>
-            <div class="pill"><span>●</span> Risk scoring</div>
-            <div class="pill"><span>●</span> Customer alerts</div>
-        </div>
-        <div class="loader-card">
-            <div class="status-row">
-                <span class="status-text" id="statusText">Initializing secure session</span>
-                <span id="percent">0%</span>
-            </div>
-            <div class="bar"><div class="fill"></div></div>
-            <div class="steps">
-                <span id="s1" class="active">Encrypt</span>
-                <span id="s2">Verify</span>
-                <span id="s3">Load</span>
-                <span id="s4">Ready</span>
-            </div>
+        <div class="mist mist-1"></div>
+        <div class="mist mist-2"></div>
+        <div class="mist mist-3"></div>
+        <div class="mist mist-4"></div>
+        <div class="mist mist-5"></div>
+
+        <div class="glow"></div>
+
+        <div class="content">
+            <div class="mark">H</div>
+            <h1>Harmonia Bank</h1>
+            <div class="line"></div>
+            <p>Quiet security. Clear detection.</p>
+            <div class="hint">Entering secure portal</div>
         </div>
     </div>
 
     <script>
-        const statuses = [
-            "Initializing secure session",
-            "Checking connection integrity",
-            "Loading fraud engine modules",
-            "Preparing access portal"
-        ];
-        let pct = 0;
-        const timer = setInterval(() => {
-            pct += 2;
-            if (pct > 100) pct = 100;
-            document.getElementById("percent").textContent = pct + "%";
-            if (pct >= 25) {
-                document.getElementById("statusText").textContent = statuses[1];
-                document.getElementById("s2").classList.add("active");
-            }
-            if (pct >= 50) {
-                document.getElementById("statusText").textContent = statuses[2];
-                document.getElementById("s3").classList.add("active");
-            }
-            if (pct >= 80) {
-                document.getElementById("statusText").textContent = statuses[3];
-                document.getElementById("s4").classList.add("active");
-            }
-            if (pct >= 100) clearInterval(timer);
-        }, 75);
-
+        // Mist gathers → brand reveals → soft exit to access page
         setTimeout(() => {
-            document.body.classList.add("out");
-            setTimeout(() => { window.location.href = "access.html"; }, 700);
-        }, 4200);
+            document.body.classList.add("leaving");
+            setTimeout(() => {
+                window.location.href = "access.html";
+            }, 850);
+        }, 4800);
     </script>
 </body>
 </html>

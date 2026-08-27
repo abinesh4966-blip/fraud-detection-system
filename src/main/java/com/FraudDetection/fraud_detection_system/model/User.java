@@ -19,7 +19,7 @@ public class User {
 
     private String fullName;
 
-    private String role = "USER"; // USER or ADMIN
+    private String role = "USER";
 
     private String accountNumber;
 
@@ -28,6 +28,8 @@ public class User {
     private LocalDateTime lockoutUntil;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime lastLoginAt;
 
     public User() {}
 
@@ -38,7 +40,6 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -65,4 +66,7 @@ public class User {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getLastLoginAt() { return lastLoginAt; }
+    public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
 }
