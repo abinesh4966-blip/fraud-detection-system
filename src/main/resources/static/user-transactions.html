@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Transactions - BSN</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f1ea;
+            color: #1b242c;
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #fffcf7;
+            border-bottom: 1px solid #e6e0d4;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            font-family: 'Fraunces', serif;
+            color: #1f6f64;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a,
+        .nav-links button {
+            color: #1b242c;
+            text-decoration: none;
+            background: #f0ebe3;
+            border: 1px solid #e6e0d4;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .nav-links a:hover,
+        .nav-links button:hover {
+            background: #e7e0d5;
+        }
+
+        .logout-btn {
+            background: #fde8e6 !important;
+            border-color: #f0b4ae !important;
+            color: #b42318 !important;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 28px auto;
+            padding: 0 18px;
+        }
+
+        .card {
+            background: #fffcf7;
+            border: 1px solid #e6e0d4;
+            border-radius: 14px;
+            padding: 22px;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 22px;
+        }
+
+        .btn-danger {
+            padding: 9px 15px;
+            background: #fde8e6;
+            color: #b42318;
+            border: 1px solid #f0b4ae;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .btn-danger:hover {
+            background: #fbd5d1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e6e0d4;
+            font-size: 13px;
+        }
+
+        th {
+            color: #5c6b76;
+            font-size: 12px;
+        }
+
+        .status-normal {
+            color: #2f6f4e;
+            font-weight: 700;
+        }
+
+        .status-suspicious {
+            color: #b42318;
+            font-weight: 700;
+        }
+
+        .empty {
+            text-align: center;
+            color: #8a96a0;
+            padding: 40px;
+        }
+
+        .message {
+            display: none;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .message-success {
+            background: #e8f5ed;
+            color: #2f6f4e;
+            border: 1px solid #b8ddc6;
+        }
+
+        .message-error {
+            background: #fde8e6;
+            color: #b42318;
+            border: 1px solid #f0b4ae;
+        }
+
+        @media (max-width: 800px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            .navbar {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+
+    <h2>BSN</h2>
+
+    <div class="nav-links">
+        <a href="user-dashboard.html">Dashboard</a>
+        <a href="user-transactions.html">My Transactions</a>
+        <a href="user-alerts.html">Alerts</a>
+        <a href="user-report.html">Report</a>
+
+        <button class="logout-btn" onclick="logout()">
+            Logout
+        </button>
+    </div>
+
+</div>
+
+
+<div class="container">
+
+    <div class="card">
+
+        <div class="header-row">
+
+            <h1>My Transactions</h1>
+
+            <button
+                class="btn-danger"
+                onclick="clearMyHistory()">
+                Clear Transaction History
+            </button>
+
+        </div>
+
+
+        <div
+            id="message"
+            class="message">
+        </div>
+
+
+        <div id="content">
+            <div class="empty">
+                Loading...
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /*
+     * USER ACCESS CHECK
+     */
+    if (
+        sessionStorage.getItem("isLoggedIn") !== "true" ||
+        sessionStorage.getItem("role") !== "USER"
+    ) {
+        window.location.href = "access.html";
+    }
+
+
+    const accountNumber =
+        sessionStorage.getItem("accountNumber") || "";
+
+
+    /*
+     * LOGOUT
+     */
+    function logout() {
+
+        sessionStorage.clear();
+
+        window.location.href = "access.html";
+    }
+
+
+    /*
+     * DISPLAY MESSAGE
+     */
+    function showMessage(message, type) {
+
+        const element =
+            document.getElementById("message");
+
+        element.textContent = message;
+
+        element.className =
+            "message " +
+            (type === "success"
+                ? "message-success"
+                : "message-error");
+
+        element.style.display = "block";
+
+        setTimeout(() => {
+
+            element.style.display = "none";
+
+        }, 4000);
+    }
+
+
+    /*
+     * CLEAR CURRENT USER'S TRANSACTION HISTORY
+     */
+    async function clearMyHistory() {
+
+        if (!accountNumber) {
+
+            showMessage(
+                "Unable to identify your account.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const confirmed = confirm(
+            "Clear Transaction History?\n\n" +
+            "This will permanently delete all transactions " +
+            "belonging to your account.\n\n" +
+            "This action cannot be undone."
+        );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        try {
+
+            const response = await fetch(
+                "https://fraud-detection-system.onrender.com/api/transactions/clear-mine" +
+                "?accountNumber=" +
+                encodeURIComponent(accountNumber),
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Server returned " + response.status
+                );
+            }
+
+
+            const result =
+                await response.json();
+
+
+            if (result.success) {
+
+                showMessage(
+                    result.deleted +
+                    " transaction(s) cleared successfully.",
+                    "success"
+                );
+
+                await load();
+
+            } else {
+
+                showMessage(
+                    result.message ||
+                    "Failed to clear transaction history.",
+                    "error"
+                );
+            }
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                "Unable to connect to the server.",
+                "error"
+            );
+        }
+    }
+
+
+    /*
+     * LOAD USER TRANSACTIONS
+     */
+    async function load() {
+
+        try {
+
+            const response = await fetch(
+                "https://fraud-detection-system.onrender.com/api/transactions/my-history?accountNumber=" +
+                encodeURIComponent(accountNumber)
+            );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Server returned " + response.status
+                );
+            }
+
+
+            const all =
+                await response.json();
+
+
+            const mine =
+                accountNumber
+                    ? all.filter(
+                        tx =>
+                            String(tx.accountNumber) ===
+                            String(accountNumber)
+                    )
+                    : [];
+
+
+            if (mine.length === 0) {
+
+                document.getElementById(
+                    "content"
+                ).innerHTML =
+                    "<div class='empty'>" +
+                    "No transactions found for your account." +
+                    "</div>";
+
+                return;
+            }
+
+
+            let html = `
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Risk</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+            `;
+
+
+            [...mine]
+                .reverse()
+                .forEach(tx => {
+
+                    const statusClass =
+                        tx.status === "SUSPICIOUS" &&
+                        !tx.falsePositive
+                            ? "status-suspicious"
+                            : "status-normal";
+
+
+                    const statusText =
+                        tx.falsePositive
+                            ? "FALSE POSITIVE"
+                            : (
+                                tx.status === "SUSPICIOUS"
+                                    ? "FLAGGED"
+                                    : "CLEARED"
+                            );
+
+
+                    html += `
+                        <tr>
+
+                            <td>
+                                ${tx.id}
+                            </td>
+
+                            <td>
+                                RM ${Number(tx.amount).toFixed(2)}
+                            </td>
+
+                            <td>
+                                ${tx.transactionType || "-"}
+                            </td>
+
+                            <td>
+                                ${tx.location || "-"}
+                            </td>
+
+                            <td>
+                                ${Number(tx.riskScore || 0)}%
+                            </td>
+
+                            <td class="${statusClass}">
+                                ${statusText}
+                            </td>
+
+                            <td>
+                                ${
+                                    tx.timestamp
+                                        ? tx.timestamp
+                                            .replace("T", " ")
+                                            .substring(0, 19)
+                                        : "-"
+                                }
+                            </td>
+
+                        </tr>
+                    `;
+                });
+
+
+            html += `
+                    </tbody>
+
+                </table>
+            `;
+
+
+            document.getElementById(
+                "content"
+            ).innerHTML = html;
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            document.getElementById(
+                "content"
+            ).innerHTML =
+                "<div class='empty'>" +
+                "Error loading transactions." +
+                "</div>";
+        }
+    }
+
+
+    /*
+     * INITIAL LOAD
+     */
+    load();
+
+</script>
+
+</body>
+</html>

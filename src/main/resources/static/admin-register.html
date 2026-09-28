@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Register - BSN</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: #eef1f4;
+            font-family: 'DM Sans', sans-serif;
+            color: #1b242c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .box {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border: 1px solid #d7dde3;
+            border-radius: 16px;
+            padding: 28px 24px;
+        }
+        h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+        .sub {
+            color: #5c6b76;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #5c6b76;
+            margin-bottom: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d7dde3;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-family: inherit;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #243447;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover { background: #1a2735; }
+        .msg {
+            margin-top: 12px;
+            font-size: 13px;
+            text-align: center;
+        }
+        .links {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .links a {
+            color: #243447;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .guide {
+            font-size: 12px;
+            color: #8a96a0;
+            margin: -6px 0 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Register Admin</h1>
+        <p class="sub">Staff account for fraud control</p>
+
+        <label>Full Name</label>
+        <input id="fullName" type="text" placeholder="Your full name">
+
+        <label>Username</label>
+        <input id="username" type="text" placeholder="Choose username">
+
+        <label>Password</label>
+        <input id="password" type="password" placeholder="Strong password">
+        <div class="guide">Min 8 chars, 1 uppercase, 1 number, 1 special character</div>
+
+        <button onclick="register()">Create Admin</button>
+        <div class="msg" id="msg"></div>
+
+        <div class="links">
+            <a href="admin-login.html">Back to admin login</a>
+        </div>
+    </div>
+
+    <script>
+        async function register() {
+            const msg = document.getElementById("msg");
+            const fullName = document.getElementById("fullName").value.trim();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+
+            if (!fullName || !username || !password) {
+                msg.style.color = "#b42318";
+                msg.textContent = "Please fill in all fields";
+                return;
+            }
+
+            const strong = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+            if (!strong.test(password)) {
+                msg.style.color = "#b42318";
+                msg.textContent = "Password does not meet requirements";
+                return;
+            }
+
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        fullName: fullName,
+                        username: username,
+                        password: password,
+                        role: "ADMIN"
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    msg.style.color = "#1f6f64";
+                    msg.textContent = "Admin created. Redirecting...";
+                    setTimeout(() => {
+                        window.location.href = "admin-login.html";
+                    }, 1000);
+                } else {
+                    msg.style.color = "#b42318";
+                    msg.textContent = data.message || "Registration failed";
+                }
+            } catch (e) {
+                msg.style.color = "#b42318";
+                msg.textContent = "Server offline. Start Spring Boot first.";
+            }
+        }
+    </script>
+</body>
+</html>

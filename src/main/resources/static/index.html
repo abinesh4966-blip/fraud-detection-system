@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction Checker - BSN</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f4f1ea; color: #1b242c; font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+        .navbar { background: #fffcf7; border-bottom: 1px solid #e6e0d4; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { font-family: 'Fraunces', serif; color: #1f6f64; font-size: 18px; }
+        .nav-links { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { color: #1b242c; text-decoration: none; background: #f0ebe3; border: 1px solid #e6e0d4; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .logout-btn { background: #fde8e6 !important; border-color: #f0b4ae !important; color: #b42318 !important; }
+        .user-info { color: #5c6b76; font-size: 13px; }
+        .container { max-width: 720px; margin: 36px auto; padding: 0 18px; }
+        .card { background: #fffcf7; border: 1px solid #e6e0d4; border-radius: 16px; padding: 28px; }
+        .card h1 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 6px; }
+        .card > p { color: #5c6b76; margin-bottom: 22px; font-size: 14px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 12px; color: #5c6b76; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 11px 13px; background: #fff; border: 1px solid #ddd5c7; border-radius: 8px; color: #1b242c; font-size: 14px; font-family: inherit; }
+        .btn-check { width: 100%; padding: 13px; margin-top: 20px; background: #1f6f64; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .result-box { margin-top: 20px; padding: 18px; border-radius: 10px; display: none; }
+        .result-normal { background: #eaf5ee; border: 1px solid #2f6f4e; color: #2f6f4e; }
+        .result-suspicious { background: #fde8e6; border: 1px solid #b42318; color: #b42318; }
+        .score { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; margin: 8px 0; }
+        .reasons { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.08); font-size: 13px; color: #5c6b76; }
+        .reasons ul { margin-top: 6px; padding-left: 18px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>BSN · Admin</h2>
+        <div class="nav-links">
+            <span class="user-info" id="userName">Admin</span>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="index.html">Checker</a>
+            <a href="history.html">History</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h1>Transaction Risk Checker</h1>
+            <p>Enter transaction details for real-time risk assessment</p>
+            <div class="form-grid">
+                <div class="form-group"><label>Account Number</label><input type="text" id="accountNumber" placeholder="e.g. 1001"></div>
+                <div class="form-group"><label>Amount (RM)</label><input type="number" id="amount" placeholder="e.g. 15000"></div>
+                <div class="form-group">
+                    <label>Transaction Type</label>
+                    <select id="transactionType">
+                        <option value="TRANSFER">TRANSFER</option>
+                        <option value="WITHDRAWAL">WITHDRAWAL</option>
+                        <option value="PAYMENT">PAYMENT</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Location</label><input type="text" id="location" placeholder="e.g. Kuala Lumpur"></div>
+            </div>
+            <button class="btn-check" onclick="checkTransaction()">Analyze Transaction</button>
+            <div id="result" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        if (sessionStorage.getItem("isLoggedIn") !== "true" || sessionStorage.getItem("role") !== "ADMIN") {
+            window.location.href = "access.html";
+        }
+        document.getElementById("userName").textContent = sessionStorage.getItem("fullName") || "Admin";
+        function logout() { sessionStorage.clear(); window.location.href = "access.html"; }
+
+        let inactivityTime = 2 * 60 * 1000, logoutTimer;
+        function resetLogoutTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => { sessionStorage.clear(); alert("Session expired due to inactivity."); window.location.href = "access.html"; }, inactivityTime);
+        }
+        window.onload = resetLogoutTimer;
+        document.onmousemove = resetLogoutTimer;
+        document.onkeypress = resetLogoutTimer;
+        document.onclick = resetLogoutTimer;
+
+        async function checkTransaction() {
+            const accountNumber = document.getElementById("accountNumber").value;
+            const amount = document.getElementById("amount").value;
+            const location = document.getElementById("location").value;
+            if (!accountNumber || !amount || !location) { alert("Please fill in all fields"); return; }
+            try {
+                const response = await fetch("https://fraud-detection-system.onrender.com/api/transactions/check", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        accountNumber,
+                        amount: parseFloat(amount),
+                        transactionType: document.getElementById("transactionType").value,
+                        location
+                    })
+                });
+                const result = await response.json();
+                const resultDiv = document.getElementById("result");
+                resultDiv.style.display = "block";
+                let reasonsHtml = "";
+                if (result.reasons && result.reasons.length > 0) {
+                    reasonsHtml = `<div class="reasons"><strong>Detection Reasons:</strong><ul>${result.reasons.map(r => `<li>${r}</li>`).join("")}</ul></div>`;
+                }
+                if (result.status === "SUSPICIOUS") {
+                    resultDiv.className = "result-box result-suspicious";
+                    resultDiv.innerHTML = `<h3>FLAGGED TRANSACTION</h3><div class="score">${result.riskScore}%</div><p><strong>Status:</strong> ${result.status}</p><p><strong>ID:</strong> ${result.id} | <strong>Account:</strong> ${result.accountNumber}</p>${reasonsHtml}`;
+                } else {
+                    resultDiv.className = "result-box result-normal";
+                    resultDiv.innerHTML = `<h3>CLEARED TRANSACTION</h3><div class="score">${result.riskScore}%</div><p><strong>Status:</strong> ${result.status}</p><p><strong>ID:</strong> ${result.id} | <strong>Account:</strong> ${result.accountNumber}</p>${reasonsHtml}`;
+                }
+            } catch (e) {
+                alert("Connection error. Ensure backend is running.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Login - BSN</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(160deg, #eef7f4 0%, #f2ebe3 45%, #f7f3ea 100%);
+            font-family: 'DM Sans', sans-serif; color: #2c2926;
+            display: flex; align-items: center; justify-content: center; padding: 24px;
+            animation: pageIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .box {
+            width: 100%; max-width: 420px; background: #fff9f3;
+            border: 1px solid #e5d8cc; border-radius: 20px; padding: 32px 26px;
+            box-shadow: 0 12px 32px rgba(44, 41, 38, 0.07);
+            animation: cardIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(18px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .logo {
+            width: 48px; height: 48px; margin: 0 auto 14px; border-radius: 14px;
+            background: linear-gradient(145deg, #4a6b5c, #3a5649); color: #fff;
+            display: grid; place-items: center; font-family: 'Fraunces', serif;
+            font-size: 20px; font-weight: 700;
+        }
+        h1 { font-family: 'Fraunces', serif; font-size: 24px; margin-bottom: 6px; text-align: center; }
+        .sub { color: #7a7168; font-size: 14px; margin-bottom: 22px; text-align: center; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #7a7168; margin-bottom: 6px; }
+        input {
+            width: 100%; padding: 12px 14px; border: 1px solid #e5d8cc; border-radius: 10px;
+            background: #fff; font-size: 14px; margin-bottom: 14px; font-family: inherit;
+        }
+        input:focus { outline: none; border-color: #4a6b5c; box-shadow: 0 0 0 3px rgba(74, 107, 92, 0.12); }
+        .captcha-box {
+            background: #f6efe7; border: 1px solid #e5d8cc; border-radius: 12px;
+            padding: 14px; margin-bottom: 12px;
+        }
+        .captcha-label { font-size: 12px; font-weight: 600; color: #7a7168; margin-bottom: 8px; }
+        #captchaCanvas {
+            width: 100%; max-width: 240px; height: 64px;
+            border-radius: 8px; border: 1px solid #e5d8cc; background: #f3ebe2;
+            cursor: pointer; display: block;
+        }
+        .captcha-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+        .captcha-row input { margin-bottom: 0; flex: 1; }
+        .refresh-btn {
+            border: 1px solid #e5d8cc; background: #fff; border-radius: 10px;
+            width: 44px; height: 44px; cursor: pointer; font-size: 18px; color: #4a6b5c;
+        }
+        button.primary {
+            width: 100%; padding: 13px; border: none; border-radius: 10px;
+            background: #4a6b5c; color: #fff; font-weight: 700; font-size: 14px;
+            cursor: pointer; font-family: inherit; margin-top: 6px;
+        }
+        button.primary:hover { background: #3a5649; }
+        .msg { margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; }
+        .msg.error { color: #b54a3c; }
+        .msg.ok { color: #3d7a5a; }
+        .links { margin-top: 16px; text-align: center; font-size: 13px; color: #7a7168; }
+        .links a { color: #4a6b5c; font-weight: 600; text-decoration: none; }
+        #loginForm { display: none; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="logo">H</div>
+        <h1>Customer Login</h1>
+        <p class="sub">Secure access to your Harmonia account</p>
+
+        <div id="captchaSection">
+            <div class="captcha-box">
+                <div class="captcha-label">Security check — enter the code shown</div>
+                <canvas id="captchaCanvas" width="240" height="64" title="Click to refresh"></canvas>
+                <div class="captcha-row">
+                    <input type="text" id="captchaAnswer" placeholder="Enter the code" maxlength="6" autocomplete="off">
+                    <button type="button" class="refresh-btn" onclick="newCaptcha()" title="New code">↻</button>
+                </div>
+                <button type="button" class="primary" onclick="verifyCaptcha()">Verify & Continue</button>
+            </div>
+            <div class="msg" id="captchaMsg"></div>
+        </div>
+
+        <form id="loginForm" onsubmit="login(event)">
+            <label>Username</label>
+            <input type="text" id="username" required autocomplete="username">
+            <label>Password</label>
+            <input type="password" id="password" required autocomplete="current-password">
+            <button type="submit" class="primary">Sign In</button>
+            <div class="msg" id="msg"></div>
+        </form>
+
+        <div class="links">
+            No account? <a href="user-register.html">Register</a> ·
+            <a href="access.html">Back</a>
+        </div>
+    </div>
+
+    <script>
+        let captchaCode = "";
+
+        function randomChar() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            return chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        function newCaptcha() {
+            const canvas = document.getElementById("captchaCanvas");
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width;
+            const h = canvas.height;
+
+            captchaCode = "";
+            for (let i = 0; i < 5; i++) captchaCode += randomChar();
+
+            ctx.fillStyle = "#f3ebe2";
+            ctx.fillRect(0, 0, w, h);
+
+            for (let i = 0; i < 6; i++) {
+                ctx.strokeStyle = "rgba(74,107,92," + (0.15 + Math.random() * 0.25) + ")";
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * w, Math.random() * h);
+                ctx.lineTo(Math.random() * w, Math.random() * h);
+                ctx.stroke();
+            }
+
+            for (let i = 0; i < 40; i++) {
+                ctx.fillStyle = "rgba(44,41,38," + (0.08 + Math.random() * 0.15) + ")";
+                ctx.beginPath();
+                ctx.arc(Math.random() * w, Math.random() * h, 1 + Math.random() * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const colors = ["#4a6b5c", "#2c2926", "#c4845c", "#3d7a5a", "#5c4a3a"];
+            for (let i = 0; i < captchaCode.length; i++) {
+                const ch = captchaCode.charAt(i);
+                const x = 28 + i * 40;
+                const y = 40 + (Math.random() * 10 - 5);
+                const angle = (Math.random() * 0.5) - 0.25;
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.font = "bold " + (26 + Math.floor(Math.random() * 4)) + "px DM Sans, Arial";
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fillText(ch, 0, 0);
+                ctx.restore();
+            }
+
+            document.getElementById("captchaAnswer").value = "";
+            document.getElementById("captchaMsg").textContent = "";
+            document.getElementById("captchaMsg").className = "msg";
+        }
+
+        function verifyCaptcha() {
+            const ans = (document.getElementById("captchaAnswer").value || "").trim().toUpperCase();
+            const msg = document.getElementById("captchaMsg");
+            if (!ans) {
+                msg.className = "msg error";
+                msg.textContent = "Enter the security code.";
+                return;
+            }
+            if (ans !== captchaCode) {
+                msg.className = "msg error";
+                msg.textContent = "Incorrect code. New code generated.";
+                newCaptcha();
+                return;
+            }
+            msg.className = "msg ok";
+            msg.textContent = "Verified.";
+            document.getElementById("captchaSection").style.display = "none";
+            document.getElementById("loginForm").style.display = "block";
+        }
+
+        async function login(e) {
+            e.preventDefault();
+            const msg = document.getElementById("msg");
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: document.getElementById("username").value.trim(),
+                        password: document.getElementById("password").value,
+                        role: "USER"
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    sessionStorage.setItem("isLoggedIn", "true");
+                    sessionStorage.setItem("role", data.role || "USER");
+                    sessionStorage.setItem("fullName", data.fullName || data.username);
+                    sessionStorage.setItem("username", data.username);
+                    sessionStorage.setItem("accountNumber", data.accountNumber || "");
+                    sessionStorage.setItem("token", data.token || "");
+                    msg.className = "msg ok";
+                    msg.textContent = "Login successful...";
+                    setTimeout(() => window.location.href = "user-dashboard.html", 700);
+                } else {
+                    msg.className = "msg error";
+                    msg.textContent = data.message || "Login failed";
+                }
+            } catch {
+                msg.className = "msg error";
+                msg.textContent = "Server offline. Start Spring Boot first.";
+            }
+        }
+
+        document.getElementById("captchaCanvas").addEventListener("click", newCaptcha);
+        newCaptcha();
+    </script>
+</body>
+</html>

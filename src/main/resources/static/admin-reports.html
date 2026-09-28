@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Reports - BSN</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        :root {
+            --bg: #f2ebe3; --surface: #fff9f3; --border: #e5d8cc;
+            --text: #2c2926; --muted: #7a7168; --accent: #4a6b5c;
+            --clay: #c4845c; --danger: #b54a3c; --soft: #f6efe7;
+        }
+        body.dark {
+            --bg: #1c1a18; --surface: #2a2623; --border: #3d3732;
+            --text: #f0e8df; --muted: #a89b8f; --accent: #8fbfa8;
+            --clay: #e0a882; --danger: #e07a6e; --soft: #342f2b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+        .navbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { font-family: 'Fraunces', serif; color: var(--accent); font-size: 18px; }
+        .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { color: var(--text); text-decoration: none; background: var(--soft); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .logout-btn { color: var(--danger) !important; }
+        .container { max-width: 900px; margin: 28px auto; padding: 0 18px; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+        h1 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 8px; }
+        .sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+        .report { background: var(--soft); border: 1px solid var(--border); border-left: 4px solid var(--clay); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        .report h3 { font-size: 14px; margin-bottom: 6px; color: var(--accent); }
+        .report p { font-size: 13px; color: var(--muted); margin: 3px 0; }
+        .empty { text-align: center; color: var(--muted); padding: 40px; }
+        .count { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>BSN · Admin</h2>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="index.html">Checker</a>
+            <a href="history.html">History</a>
+            <a href="admin-reports.html">Reports</a>
+            <button type="button" onclick="toggleTheme()" id="themeBtn">Dark Mode</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <h1>Customer Reports</h1>
+            <p class="sub">Reports submitted by customers about suspicious activity</p>
+            <div class="count" id="count"></div>
+            <div id="content"><div class="empty">Loading...</div></div>
+        </div>
+    </div>
+    <script>
+        if (sessionStorage.getItem("isLoggedIn") !== "true" || sessionStorage.getItem("role") !== "ADMIN") {
+            window.location.href = "access.html";
+        }
+        function applyTheme() {
+            const dark = localStorage.getItem("theme") === "dark";
+            document.body.classList.toggle("dark", dark);
+            document.getElementById("themeBtn").textContent = dark ? "Light Mode" : "Dark Mode";
+        }
+        function toggleTheme() {
+            localStorage.setItem("theme", document.body.classList.contains("dark") ? "light" : "dark");
+            applyTheme();
+        }
+        applyTheme();
+        function logout() { sessionStorage.clear(); window.location.href = "access.html"; }
+
+        function loadReports() {
+            const reports = JSON.parse(localStorage.getItem("userReports") || "[]").reverse();
+            document.getElementById("count").textContent = reports.length + " report(s)";
+            if (reports.length === 0) {
+                document.getElementById("content").innerHTML = "<div class='empty'>No customer reports yet.<br>Ask a user to submit one from Report page.</div>";
+                return;
+            }
+            let html = "";
+            reports.forEach(r => {
+                html += `<div class="report">
+                    <h3>${r.issueType || "Report"}</h3>
+                    <p><strong>User:</strong> ${r.username || "-"} · <strong>Account:</strong> ${r.accountNumber || "-"}</p>
+                    <p><strong>Transaction ID:</strong> ${r.txId || "Not specified"}</p>
+                    <p><strong>Message:</strong> ${r.message}</p>
+                    <p><strong>Submitted:</strong> ${r.createdAt ? r.createdAt.replace("T"," ").substring(0,19) : "-"}</p>
+                </div>`;
+            });
+            document.getElementById("content").innerHTML = html;
+        }
+        loadReports();
+    </script>
+</body>
+</html>

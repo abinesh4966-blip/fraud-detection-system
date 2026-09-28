@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Activity - BSN</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f4f1ea; color: #1b242c; font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+        .navbar { background: #fffcf7; border-bottom: 1px solid #e6e0d4; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { font-family: 'Fraunces', serif; color: #1f6f64; font-size: 18px; }
+        .nav-links { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { color: #1b242c; text-decoration: none; background: #f0ebe3; border: 1px solid #e6e0d4; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .logout-btn { background: #fde8e6 !important; border-color: #f0b4ae !important; color: #b42318 !important; }
+        .container { max-width: 640px; margin: 28px auto; padding: 0 18px; }
+        .card { background: #fffcf7; border: 1px solid #e6e0d4; border-radius: 14px; padding: 24px; }
+        h1 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 8px; }
+        .sub { color: #5c6b76; font-size: 14px; margin-bottom: 18px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #5c6b76; margin-bottom: 6px; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd5c7; border-radius: 8px; margin-bottom: 14px; font-family: inherit; font-size: 14px; }
+        textarea { min-height: 110px; resize: vertical; }
+        button { width: 100%; padding: 13px; border: none; border-radius: 8px; background: #1f6f64; color: white; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .msg { margin-top: 12px; text-align: center; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>BSN</h2>
+        <div class="nav-links">
+            <a href="user-dashboard.html">Dashboard</a>
+            <a href="user-transactions.html">My Transactions</a>
+            <a href="user-alerts.html">Alerts</a>
+            <a href="user-report.html">Report</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <h1>Report Suspicious Activity</h1>
+            <p class="sub">Tell us if you notice something unusual on your account</p>
+
+            <label>Related Transaction ID (optional)</label>
+            <input type="number" id="txId" placeholder="e.g. 12">
+
+            <label>Issue Type</label>
+            <select id="issueType">
+                <option value="Unauthorized transaction">Unauthorized transaction</option>
+                <option value="Unrecognized location">Unrecognized location</option>
+                <option value="Possible account takeover">Possible account takeover</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label>Description</label>
+            <textarea id="message" placeholder="Describe what happened..."></textarea>
+
+            <button onclick="submitReport()">Submit Report</button>
+            <div class="msg" id="msg"></div>
+        </div>
+    </div>
+    <script>
+        if (sessionStorage.getItem("isLoggedIn") !== "true" || sessionStorage.getItem("role") !== "USER") {
+            window.location.href = "access.html";
+        }
+        function logout() { sessionStorage.clear(); window.location.href = "access.html"; }
+
+        function submitReport() {
+            const msg = document.getElementById("msg");
+            const message = document.getElementById("message").value.trim();
+            if (!message) {
+                msg.style.color = "#b42318";
+                msg.textContent = "Please enter a description";
+                return;
+            }
+
+            // Store locally for demo (admin can be extended later to read reports from API)
+            const reports = JSON.parse(localStorage.getItem("userReports") || "[]");
+            reports.push({
+                id: Date.now(),
+                username: sessionStorage.getItem("username"),
+                accountNumber: sessionStorage.getItem("accountNumber"),
+                txId: document.getElementById("txId").value || null,
+                issueType: document.getElementById("issueType").value,
+                message: message,
+                createdAt: new Date().toISOString()
+            });
+            localStorage.setItem("userReports", JSON.stringify(reports));
+
+            msg.style.color = "#1f6f64";
+            msg.textContent = "Report submitted. Our team will review it.";
+            document.getElementById("message").value = "";
+            document.getElementById("txId").value = "";
+        }
+    </script>
+</body>
+</html>

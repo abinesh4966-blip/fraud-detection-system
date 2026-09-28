@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Register - BSN</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { min-height: 100vh; background: #f4f1ea; font-family: 'DM Sans', sans-serif; color: #1b242c; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .box { width: 100%; max-width: 420px; background: #fffcf7; border: 1px solid #e6e0d4; border-radius: 20px; padding: 32px 26px; }
+        h1 { font-family: 'Fraunces', serif; font-size: 24px; margin-bottom: 6px; }
+        .sub { color: #5c6b76; font-size: 14px; margin-bottom: 20px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #5c6b76; margin-bottom: 6px; }
+        input { width: 100%; padding: 12px 14px; border: 1px solid #ddd5c7; border-radius: 10px; margin-bottom: 14px; font-family: inherit; }
+        button { width: 100%; padding: 13px; border: none; border-radius: 10px; background: #1f6f64; color: white; font-weight: 700; cursor: pointer; }
+        .msg { margin-top: 12px; font-size: 13px; text-align: center; }
+        .links { margin-top: 16px; text-align: center; font-size: 13px; }
+        .links a { color: #1f6f64; font-weight: 600; text-decoration: none; }
+        .guide { font-size: 12px; color: #8a96a0; margin: -6px 0 14px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Create Customer Account</h1>
+        <p class="sub">Register to monitor your transactions</p>
+        <label>Full Name</label>
+        <input id="fullName" type="text">
+        <label>Username</label>
+        <input id="username" type="text">
+        <label>Password</label>
+        <input id="password" type="password">
+        <div class="guide">Min 8 chars, 1 uppercase, 1 number, 1 special character</div>
+        <button onclick="register()">Register</button>
+        <div class="msg" id="msg"></div>
+        <div class="links"><a href="user-login.html">Back to login</a></div>
+    </div>
+    <script>
+        async function register() {
+            const msg = document.getElementById("msg");
+            const password = document.getElementById("password").value;
+            const strong = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+            if (!strong.test(password)) {
+                msg.style.color = "#b42318";
+                msg.textContent = "Password does not meet requirements";
+                return;
+            }
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        fullName: document.getElementById("fullName").value.trim(),
+                        username: document.getElementById("username").value.trim(),
+                        password: password,
+                        role: "USER"
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    msg.style.color = "#1f6f64";
+                    msg.textContent = "Registered! Account: " + (data.accountNumber || "") + " Redirecting...";
+                    setTimeout(() => window.location.href = "user-login.html", 1200);
+                } else {
+                    msg.style.color = "#b42318";
+                    msg.textContent = data.message || "Failed";
+                }
+            } catch {
+                msg.style.color = "#b42318";
+                msg.textContent = "Server offline";
+            }
+        }
+    </script>
+</body>
+</html>

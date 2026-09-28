@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BSN · Fraud Detection System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            overflow: hidden;
+            background: #0b1a33;
+            font-family: 'DM Sans', sans-serif;
+            color: #f4f7fb;
+        }
+
+        .stage {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background:
+                radial-gradient(ellipse 100% 70% at 50% 0%, #1e4f8c 0%, transparent 50%),
+                radial-gradient(ellipse 80% 55% at 80% 100%, #0f2a4d 0%, transparent 45%),
+                linear-gradient(165deg, #0b1a33 0%, #102844 45%, #0d213f 100%);
+            contain: strict;
+        }
+
+        .sun {
+            position: absolute;
+            top: -10%;
+            left: 50%;
+            width: 58vmin;
+            height: 58vmin;
+            margin-left: -29vmin;
+            border-radius: 50%;
+            background: radial-gradient(circle,
+                rgba(255, 220, 160, 0.75) 0%,
+                rgba(230, 170, 90, 0.28) 35%,
+                rgba(30, 79, 140, 0.08) 60%,
+                transparent 72%);
+            animation: sunPulse 4s ease-in-out infinite;
+            z-index: 1;
+            will-change: opacity;
+        }
+        @keyframes sunPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .rays {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background: conic-gradient(
+                from 210deg at 50% 5%,
+                transparent 0deg,
+                rgba(255, 230, 190, 0.09) 16deg,
+                transparent 26deg,
+                transparent 42deg,
+                rgba(255, 220, 170, 0.06) 50deg,
+                transparent 60deg,
+                transparent 75deg,
+                rgba(255, 235, 200, 0.08) 82deg,
+                transparent 92deg,
+                transparent 360deg
+            );
+            animation: raysFade 5s ease-in-out infinite;
+            pointer-events: none;
+            will-change: opacity;
+        }
+        @keyframes raysFade {
+            0%, 100% { opacity: 0.65; }
+            50% { opacity: 1; }
+        }
+
+        .mist {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 3;
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+        .mist-1 {
+            width: 55vmin; height: 34vmin;
+            left: 4%; top: 24%;
+            background: rgba(200, 220, 255, 0.16);
+            filter: blur(20px);
+            animation: drift1 5.5s ease-in-out forwards;
+        }
+        .mist-2 {
+            width: 50vmin; height: 30vmin;
+            right: 0; top: 42%;
+            background: rgba(255, 230, 190, 0.12);
+            filter: blur(22px);
+            animation: drift2 5.5s ease-in-out forwards;
+        }
+        .mist-3 {
+            width: 58vmin; height: 26vmin;
+            left: 22%; bottom: 14%;
+            background: rgba(180, 210, 255, 0.12);
+            filter: blur(18px);
+            animation: drift3 5.5s ease-in-out forwards;
+        }
+        @keyframes drift1 {
+            0%   { transform: translate(-18%, 8%); opacity: 0.25; }
+            50%  { transform: translate(4%, 0); opacity: 0.7; }
+            100% { transform: translate(14%, -4%); opacity: 0.08; }
+        }
+        @keyframes drift2 {
+            0%   { transform: translate(18%, -6%); opacity: 0.2; }
+            50%  { transform: translate(-4%, 2%); opacity: 0.6; }
+            100% { transform: translate(-16%, 4%); opacity: 0.06; }
+        }
+        @keyframes drift3 {
+            0%   { transform: translate(0, 14%); opacity: 0.18; }
+            50%  { transform: translate(0, 0); opacity: 0.5; }
+            100% { transform: translate(0, -8%); opacity: 0.05; }
+        }
+
+        .haze {
+            position: absolute;
+            left: 0; right: 0;
+            height: 22%;
+            z-index: 4;
+            pointer-events: none;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 235, 200, 0.08) 30%,
+                rgba(220, 235, 255, 0.14) 50%,
+                rgba(255, 230, 190, 0.08) 70%,
+                transparent 100%);
+            animation: hazeMove 6s ease-in-out infinite;
+            will-change: transform, opacity;
+        }
+        .haze-a { top: 30%; }
+        .haze-b { top: 55%; height: 16%; animation-duration: 8s; animation-direction: reverse; }
+        @keyframes hazeMove {
+            0%, 100% { transform: translateX(-4%); opacity: 0.45; }
+            50% { transform: translateX(4%); opacity: 0.85; }
+        }
+
+        .mote {
+            position: absolute;
+            width: 2px; height: 2px;
+            border-radius: 50%;
+            background: rgba(255, 240, 220, 0.7);
+            z-index: 5;
+            animation: rise linear infinite;
+            will-change: transform, opacity;
+        }
+        @keyframes rise {
+            0%   { transform: translateY(0); opacity: 0; }
+            15%  { opacity: 0.7; }
+            100% { transform: translateY(-40vh); opacity: 0; }
+        }
+
+        .vignette {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+            background: radial-gradient(ellipse 75% 65% at 50% 45%, transparent 35%, rgba(5, 12, 28, 0.55) 100%);
+        }
+
+        .content {
+            position: absolute;
+            z-index: 10;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: min(92vw, 460px);
+            opacity: 0;
+            animation: contentIn 1.2s ease forwards 1.15s;
+        }
+        @keyframes contentIn {
+            from { opacity: 0; transform: translate(-50%, -46%); }
+            to   { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        .logo-wrap {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+        .logo-wrap img {
+            width: 88%;
+            height: 88%;
+            object-fit: contain;
+        }
+        .logo-fallback {
+            font-family: 'Fraunces', serif;
+            font-size: 34px;
+            font-weight: 700;
+            color: #0b1a33;
+            display: none;
+        }
+
+        h1 {
+            font-family: 'Fraunces', serif;
+            font-size: clamp(26px, 5vw, 36px);
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .system-name {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #ffe7c2;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 220, 170, 0.28);
+        }
+        .tagline {
+            color: rgba(244, 247, 251, 0.72);
+            font-size: 14px;
+            margin-bottom: 26px;
+        }
+
+        .loader-wrap { width: min(270px, 72vw); margin: 0 auto; }
+        .loader-track {
+            height: 4px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+        }
+        .loader-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, #c47a2c, #f0d5b8);
+            box-shadow: 0 0 10px rgba(255, 200, 120, 0.4);
+        }
+        .loader-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: rgba(244, 247, 251, 0.5);
+        }
+
+        .note {
+            margin-top: 18px;
+            font-size: 10px;
+            color: rgba(244, 247, 251, 0.4);
+            line-height: 1.4;
+        }
+
+        body.leaving .stage { animation: exitFade 0.8s ease forwards; }
+        @keyframes exitFade { to { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="stage">
+        <div class="sun"></div>
+        <div class="rays"></div>
+        <div class="mist mist-1"></div>
+        <div class="mist mist-2"></div>
+        <div class="mist mist-3"></div>
+        <div class="haze haze-a"></div>
+        <div class="haze haze-b"></div>
+        <div id="dust"></div>
+        <div class="vignette"></div>
+
+        <div class="content">
+            <div class="logo-wrap">
+                <img id="bsnLogo" src="img/bsn-logo.jpg" alt="Bank Simpanan Nasional logo"
+                     onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block';">
+                <div class="logo-fallback" id="logoFallback">BSN</div>
+            </div>
+
+            <h1>Bank Simpanan Nasional</h1>
+            <div class="system-name">Fraud Detection System</div>
+            <p class="tagline">Academic prototype for secure transaction monitoring</p>
+
+            <div class="loader-wrap">
+                <div class="loader-track">
+                    <div class="loader-fill" id="loaderFill"></div>
+                </div>
+                <div class="loader-meta">
+                    <span id="loaderStatus">Initialising…</span>
+                    <span id="loaderPct">0%</span>
+                </div>
+            </div>
+
+            <p class="note">Logo used with permission for student FYP demonstration purposes.</p>
+        </div>
+    </div>
+
+    <script>
+        const dust = document.getElementById("dust");
+        for (let i = 0; i < 10; i++) {
+            const m = document.createElement("span");
+            m.className = "mote";
+            m.style.left = (15 + Math.random() * 70) + "%";
+            m.style.bottom = (5 + Math.random() * 20) + "%";
+            m.style.animationDuration = (6 + Math.random() * 5) + "s";
+            m.style.animationDelay = (Math.random() * 4) + "s";
+            dust.appendChild(m);
+        }
+
+        const statuses = ["Initialising…", "Loading modules…", "Securing portal…", "Ready"];
+        const fill = document.getElementById("loaderFill");
+        const pct = document.getElementById("loaderPct");
+        const status = document.getElementById("loaderStatus");
+
+        let progress = 0;
+        const timer = setInterval(() => {
+            progress = Math.min(100, progress + 1.4);
+            fill.style.width = progress + "%";
+            pct.textContent = Math.round(progress) + "%";
+            if (progress < 30) status.textContent = statuses[0];
+            else if (progress < 55) status.textContent = statuses[1];
+            else if (progress < 82) status.textContent = statuses[2];
+            else status.textContent = statuses[3];
+
+            if (progress >= 100) {
+                clearInterval(timer);
+                document.body.classList.add("leaving");
+                setTimeout(() => { window.location.href = "access.html"; }, 800);
+            }
+        }, 45);
+    </script>
+</body>
+</html>

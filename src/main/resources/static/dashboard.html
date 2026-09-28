@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - BSN</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+        :root {
+            --bg: #f2ebe3; --surface: #fff9f3; --border: #e5d8cc;
+            --text: #2c2926; --muted: #7a7168; --accent: #4a6b5c;
+            --accent-hover: #3a5649; --clay: #c4845c; --danger: #b54a3c;
+            --success: #3d7a5a; --warn: #a67c2a; --soft: #f6efe7;
+        }
+        body.dark {
+            --bg: #1c1a18; --surface: #2a2623; --border: #3d3732;
+            --text: #f0e8df; --muted: #a89b8f; --accent: #8fbfa8;
+            --accent-hover: #6fa88f; --clay: #e0a882; --danger: #e07a6e;
+            --success: #7dba9a; --warn: #e0b45c; --soft: #342f2b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'DM Sans', sans-serif; min-height: 100vh;
+            transition: background .25s, color .25s;
+        }
+        .navbar {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 14px 28px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .navbar h2 { font-family: 'Fraunces', serif; color: var(--accent); font-size: 18px; }
+        .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .nav-links a, .nav-links button {
+            color: var(--text); text-decoration: none; background: var(--soft);
+            border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;
+            font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+        }
+        .logout-btn {
+            background: color-mix(in srgb, var(--danger) 15%, var(--surface)) !important;
+            border-color: color-mix(in srgb, var(--danger) 40%, var(--border)) !important;
+            color: var(--danger) !important;
+        }
+        .user-info { color: var(--muted); font-size: 13px; }
+        .container { max-width: 1400px; margin: 22px auto; padding: 0 18px; }
+        .header-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; flex-wrap: wrap; gap: 12px;
+        }
+        h1 { font-family: 'Fraunces', serif; font-size: 24px; }
+        .live-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .btn {
+            font-weight: 700; padding: 9px 16px; border-radius: 8px; border: none;
+            cursor: pointer; font-size: 13px; font-family: inherit;
+        }
+        .btn-start { background: var(--accent); color: #fff; }
+        .btn-stop { background: var(--danger); color: #fff; }
+        .live-status { font-size: 13px; color: var(--muted); }
+        .live-status.active { color: var(--accent); font-weight: 600; }
+        .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 16px; text-align: center;
+        }
+        .card h3 { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+        .card .number { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; color: var(--accent); }
+        .suspicious .number { color: var(--danger); }
+        .false-positive .number { color: var(--warn); }
+        .main-grid { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+        .panel {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; display: flex; flex-direction: column;
+            min-height: 420px; overflow: hidden;
+        }
+        .panel-header {
+            padding: 12px 16px; border-bottom: 1px solid var(--border);
+            font-weight: 700; font-size: 13px; color: var(--accent);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-body { flex: 1; overflow-y: auto; padding: 12px; }
+        .upload-box { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        .upload-box input[type="file"] { color: var(--muted); font-size: 12px; margin-bottom: 8px; width: 100%; }
+        .btn-upload { background: var(--clay); color: #fff; width: 100%; }
+        .upload-msg { margin-top: 8px; font-size: 12px; color: var(--muted); }
+        .activity-item {
+            background: var(--soft); border-radius: 10px; padding: 10px 12px;
+            margin-bottom: 8px; border-left: 4px solid var(--border);
+            animation: slideIn .3s ease; font-size: 12px; cursor: pointer;
+        }
+        .activity-item.flagged { border-left-color: var(--danger); }
+        .activity-item.cleared { border-left-color: var(--success); }
+        .activity-item.processing { border-left-color: var(--accent); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .activity-item .row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .activity-item .acc { font-weight: 700; }
+        .activity-item .amt { color: var(--muted); }
+        .activity-item .status-line { font-weight: 700; margin: 3px 0; }
+        .status-line.flagged { color: var(--danger); }
+        .status-line.cleared { color: var(--success); }
+        .status-line.processing { color: var(--accent); }
+        .activity-item .reason { color: var(--muted); font-size: 11px; }
+        .empty { text-align: center; color: var(--muted); padding: 50px 15px; font-size: 13px; }
+        @media (max-width: 1100px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .cards { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>BSN · Admin</h2>
+        <div class="nav-links">
+            <span class="user-info" id="userName">Admin</span>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="index.html">Checker</a>
+            <a href="history.html">History</a>
+            <a href="admin-reports.html">Reports</a>
+            <a href="admin-users.html">Users</a>
+            <button type="button" onclick="toggleTheme()" id="themeBtn">Dark Mode</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header-row">
+            <h1>Fraud Control Center</h1>
+            <div class="live-controls">
+                <span class="live-status" id="liveStatus">Live Monitoring: Offline</span>
+                <button class="btn btn-start" id="startBtn" onclick="startLiveMonitoring()">Start Live</button>
+                <button class="btn btn-stop" id="stopBtn" onclick="stopLiveMonitoring()" style="display:none;">Stop</button>
+                <button class="btn" onclick="resetEntireSystem()" style="background:var(--danger); color:white;">
+                    Reset Entire System
+                </button>
+            </div>
+        </div>
+
+        <div id="mlStatusBox" style="margin-bottom:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;">
+            <span id="mlStatusText">ML Status: loading...</span>
+            <span style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn" style="background:var(--accent);color:#fff;padding:6px 12px;font-size:12px;" onclick="retrainMl()">Retrain ML</button>
+                <button type="button" class="btn" style="background:var(--danger);color:#fff;padding:6px 12px;font-size:12px;" onclick="resetMlOnly()">Reset ML</button>
+            </span>
+        </div>
+
+        <div class="cards">
+            <div class="card total"><h3>Total Transactions</h3><div class="number" id="totalCount">0</div></div>
+            <div class="card normal"><h3>Cleared</h3><div class="number" id="normalCount">0</div></div>
+            <div class="card suspicious"><h3>Flagged</h3><div class="number" id="suspiciousCount">0</div></div>
+            <div class="card false-positive"><h3>False Positive</h3><div class="number" id="falsePositiveCount">0</div></div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <div class="panel-header">Threat Distribution</div>
+                <div class="panel-body" style="display:flex; flex-direction:column; gap:16px;">
+                    <canvas id="pieChart"></canvas>
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Live Monitoring Feed</span>
+                    <span style="font-size:11px; color:var(--muted);" id="liveCount">0 events</span>
+                </div>
+                <div class="panel-body" id="liveFeed">
+                    <div class="empty">Waiting for live transactions...<br>Press Start Live to begin.</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Upload Verification</span>
+                    <span style="font-size:11px; color:var(--muted);" id="uploadCount">0 processed</span>
+                </div>
+                <div class="upload-box">
+                    <input type="file" id="csvFile" accept=".csv">
+                    <button class="btn btn-upload" id="uploadBtn" onclick="startSequentialUpload()">Upload & Verify</button>
+                    <div class="upload-msg" id="uploadMessage"></div>
+                </div>
+                <div class="panel-body" id="uploadFeed">
+                    <div class="empty">Upload a CSV file to begin sequential verification.<br>Click a result for full reasons.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            if (sessionStorage.getItem("isLoggedIn") !== "true" || sessionStorage.getItem("role") !== "ADMIN") {
+            window.location.href = "access.html";
+        }
+
+        document.getElementById("userName").textContent = sessionStorage.getItem("fullName") || "Admin";
+
+        function applyTheme() {
+            const dark = localStorage.getItem("theme") === "dark";
+            document.body.classList.toggle("dark", dark);
+            document.getElementById("themeBtn").textContent = dark ? "Light Mode" : "Dark Mode";
+        }
+        function toggleTheme() {
+            localStorage.setItem("theme", document.body.classList.contains("dark") ? "light" : "dark");
+            applyTheme();
+            loadDashboard();
+        }
+        applyTheme();
+
+        function logout() {
+            stopLiveMonitoring();
+            sessionStorage.clear();
+            window.location.href = "access.html";
+        }
+
+        let inactivityTime = 2 * 60 * 1000;
+        let logoutTimer;
+        function resetLogoutTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                stopLiveMonitoring();
+                sessionStorage.clear();
+                alert("Session expired due to inactivity.");
+                window.location.href = "access.html";
+            }, inactivityTime);
+        }
+        window.onload = resetLogoutTimer;
+        document.onmousemove = resetLogoutTimer;
+        document.onkeypress = resetLogoutTimer;
+        document.onclick = resetLogoutTimer;
+        document.onscroll = resetLogoutTimer;
+
+        let pieChart, barChart;
+        let liveInterval = null;
+        let liveEventCount = 0;
+        let uploadEventCount = 0;
+        let isUploading = false;
+
+        function chartColors() {
+            const s = getComputedStyle(document.body);
+            return [
+                s.getPropertyValue('--success').trim(),
+                s.getPropertyValue('--danger').trim(),
+                s.getPropertyValue('--warn').trim()
+            ];
+        }
+
+        async function loadDashboard() {
+            refreshMlStatus();
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/stats");
+                const stats = await res.json();
+
+                document.getElementById("totalCount").textContent = stats.total;
+                document.getElementById("normalCount").textContent = stats.normal;
+                document.getElementById("suspiciousCount").textContent = stats.suspicious;
+                document.getElementById("falsePositiveCount").textContent = stats.falsePositive;
+
+                if (pieChart) pieChart.destroy();
+                if (barChart) barChart.destroy();
+
+                const colors = chartColors();
+                const muted = getComputedStyle(document.body).getPropertyValue('--muted').trim();
+                const border = getComputedStyle(document.body).getPropertyValue('--border').trim();
+
+                pieChart = new Chart(document.getElementById("pieChart").getContext("2d"), {
+                    type: "doughnut",
+                    data: {
+                        labels: ["Cleared", "Flagged", "False Positive"],
+                        datasets: [{
+                            data: [stats.normal, stats.suspicious, stats.falsePositive],
+                            backgroundColor: colors,
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: "bottom",
+                                labels: { color: muted, boxWidth: 10, font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+
+                barChart = new Chart(document.getElementById("barChart").getContext("2d"), {
+                    type: "bar",
+                    data: {
+                        labels: ["Cleared", "Flagged", "False Positive"],
+                        datasets: [{
+                            data: [stats.normal, stats.suspicious, stats.falsePositive],
+                            backgroundColor: colors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: muted },
+                                grid: { color: border }
+                            },
+                            x: {
+                                ticks: { color: muted },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function addFeedItem(containerId, tx, mode = "live") {
+            const list = document.getElementById(containerId);
+            if (list.querySelector(".empty")) list.innerHTML = "";
+
+            const isFlagged = tx.status === "SUSPICIOUS";
+            const reasons = (tx.reasons && tx.reasons.length > 0)
+                ? tx.reasons
+                : ["No anomaly detected"];
+            const preview = reasons[0];
+            const level = tx.riskLevel || (tx.riskScore >= 75 ? "CRITICAL" : tx.riskScore >= 50 ? "HIGH" : tx.riskScore >= 25 ? "MODERATE" : "LOW");
+
+            const item = document.createElement("div");
+            item.className = `activity-item ${isFlagged ? "flagged" : "cleared"}`;
+            item.title = "Click to view full reasons";
+
+            item.innerHTML = `
+                <div class="row">
+                    <span class="acc">ACC ${tx.accountNumber}</span>
+                    <span class="amt">RM ${Number(tx.amount).toFixed(2)}</span>
+                </div>
+                <div class="status-line ${isFlagged ? "flagged" : "cleared"}">
+                    ${isFlagged ? "FLAGGED" : "CLEARED"} — ${tx.riskScore}% · ${level}
+                </div>
+                <div class="reason">${preview} <span style="opacity:.7">(click for more)</span></div>
+                <div class="reason-full" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+                    <strong style="font-size:11px; color:var(--accent);">Risk assessment</strong>
+                    <div style="margin:6px 0; font-size:11px; color:var(--muted);">
+                        Score ${tx.riskScore}% · Level ${level} · Status ${tx.status || "-"}
+                    </div>
+                    <strong style="font-size:11px; color:var(--accent);">Why?</strong>
+                    <ul style="margin:6px 0 0 16px; color:var(--muted); font-size:11px;">
+                        ${reasons.map(r => `<li style="margin-bottom:3px;">${r}</li>`).join("")}
+                    </ul>
+                    <div style="margin-top:6px; font-size:11px; color:var(--muted);">
+                        Type: ${tx.transactionType || "-"} · Location: ${tx.location || "-"}
+                    </div>
+                </div>
+            `;
+
+            item.addEventListener("click", () => {
+                const full = item.querySelector(".reason-full");
+                full.style.display = full.style.display === "none" ? "block" : "none";
+            });
+
+            list.insertBefore(item, list.firstChild);
+            while (list.children.length > 25) list.removeChild(list.lastChild);
+
+            if (mode === "live") {
+                liveEventCount++;
+                document.getElementById("liveCount").textContent = liveEventCount + " events";
+            } else {
+                uploadEventCount++;
+                document.getElementById("uploadCount").textContent = uploadEventCount + " processed";
+            }
+        }
+
+        async function generateOneTransaction() {
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/generate", {
+                    method: "POST"
+                });
+                const tx = await res.json();
+                addFeedItem("liveFeed", tx, "live");
+                loadDashboard();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function startLiveMonitoring() {
+            if (liveInterval) return;
+            document.getElementById("startBtn").style.display = "none";
+            document.getElementById("stopBtn").style.display = "inline-block";
+            document.getElementById("liveStatus").textContent = "Live Monitoring: Active";
+            document.getElementById("liveStatus").classList.add("active");
+            generateOneTransaction();
+            liveInterval = setInterval(generateOneTransaction, 3200);
+        }
+
+        function stopLiveMonitoring() {
+            if (liveInterval) {
+                clearInterval(liveInterval);
+                liveInterval = null;
+            }
+            document.getElementById("startBtn").style.display = "inline-block";
+            document.getElementById("stopBtn").style.display = "none";
+            document.getElementById("liveStatus").textContent = "Live Monitoring: Offline";
+            document.getElementById("liveStatus").classList.remove("active");
+        }
+
+        async function startSequentialUpload() {
+            if (isUploading) return;
+
+            const fileInput = document.getElementById("csvFile");
+            const message = document.getElementById("uploadMessage");
+            const uploadBtn = document.getElementById("uploadBtn");
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                message.style.color = "var(--danger)";
+                message.textContent = "Select a CSV file first.";
+                return;
+            }
+
+            const text = await fileInput.files[0].text();
+            const rows = text.trim().split("\n").slice(1).filter(l => l.trim().length > 0);
+
+            if (rows.length === 0) {
+                message.style.color = "var(--danger)";
+                message.textContent = "CSV has no data rows.";
+                return;
+            }
+
+            isUploading = true;
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = "Verifying...";
+            message.style.color = "var(--accent)";
+            message.textContent = `Processing 0 / ${rows.length}...`;
+            document.getElementById("uploadFeed").innerHTML = "";
+            uploadEventCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const cols = rows[i].split(",");
+                if (cols.length < 4) continue;
+
+                const payload = {
+                    accountNumber: cols[0].trim(),
+                    amount: parseFloat(cols[1].trim()),
+                    transactionType: cols[2].trim(),
+                    location: cols[3].trim()
+                };
+
+                const list = document.getElementById("uploadFeed");
+                const temp = document.createElement("div");
+                temp.className = "activity-item processing";
+                temp.id = "temp-processing";
+                temp.innerHTML = `
+                    <div class="row">
+                        <span class="acc">ACC ${payload.accountNumber}</span>
+                        <span class="amt">RM ${payload.amount.toFixed(2)}</span>
+                    </div>
+                    <div class="status-line processing">Scanning...</div>
+                `;
+                list.insertBefore(temp, list.firstChild);
+
+                try {
+                    const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/check", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    const tx = await res.json();
+                    const tempEl = document.getElementById("temp-processing");
+                    if (tempEl) tempEl.remove();
+                    addFeedItem("uploadFeed", tx, "upload");
+                } catch (e) {
+                    const tempEl = document.getElementById("temp-processing");
+                    if (tempEl) tempEl.remove();
+                }
+
+                message.textContent = `Processing ${i + 1} / ${rows.length}...`;
+                await new Promise(r => setTimeout(r, 650));
+            }
+
+            message.style.color = "var(--success)";
+            message.textContent = `Complete — ${rows.length} transactions processed. Click a result for full reasons.`;
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = "Upload & Verify";
+            isUploading = false;
+            loadDashboard();
+        }
+
+        async function clearAllData() {
+            if (!confirm("Delete ALL transactions and reset ML? This cannot be undone.")) return;
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/clear-all", { method: "DELETE" });
+                const data = await res.json();
+                alert((data.message || "Cleared") + " (deleted: " + (data.deleted || 0) + ")");
+                document.getElementById("liveFeed").innerHTML = '<div class="empty">Waiting for live transactions...</div>';
+                document.getElementById("uploadFeed").innerHTML = '<div class="empty">Upload a CSV file to begin sequential verification.</div>';
+                liveEventCount = 0;
+                uploadEventCount = 0;
+                document.getElementById("liveCount").textContent = "0 events";
+                document.getElementById("uploadCount").textContent = "0 processed";
+                stopLiveMonitoring();
+                loadDashboard();
+            } catch (e) {
+                alert("Failed to clear data. Is the server running?");
+            }
+        }
+
+        async function resetEntireSystem() {
+            const confirmed = confirm(
+                "WARNING\n\n" +
+                "This will permanently delete ALL transaction history " +
+                "and reset the ML model.\n\n" +
+                "You will be logged out.\n\nContinue?"
+            );
+            if (!confirmed) return;
+
+            try {
+                stopLiveMonitoring();
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/clear-all", { method: "DELETE" });
+                const data = await res.json();
+
+                document.getElementById("totalCount").textContent = "0";
+                document.getElementById("normalCount").textContent = "0";
+                document.getElementById("suspiciousCount").textContent = "0";
+                document.getElementById("falsePositiveCount").textContent = "0";
+                document.getElementById("liveFeed").innerHTML = '<div class="empty">Waiting for live transactions...</div>';
+                document.getElementById("uploadFeed").innerHTML = '<div class="empty">Upload a CSV file to begin sequential verification.</div>';
+                liveEventCount = 0;
+                uploadEventCount = 0;
+                document.getElementById("liveCount").textContent = "0 events";
+                document.getElementById("uploadCount").textContent = "0 processed";
+
+                alert(
+                    "SYSTEM RESET COMPLETE\n\n" +
+                    "Transactions deleted: " + (data.deleted || 0) + "\n" +
+                    "ML model has been reset.\n\n" +
+                    "You will now be returned to the login page."
+                );
+
+                sessionStorage.clear();
+                window.location.href = "access.html";
+            } catch (error) {
+                console.error(error);
+                alert("Unable to reset the system.\n\nMake sure the Spring Boot server is running.");
+            }
+        }
+
+        async function refreshMlStatus() {
+            const el = document.getElementById("mlStatusText");
+            if (!el) return;
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/ml/status");
+                const s = await res.json();
+                if (s.ready) {
+                    el.innerHTML = `<strong style="color:var(--accent)">ML Status: Ready</strong> · Training samples: <b>${s.trainSize}</b> · Last trained: ${s.lastTrained ? String(s.lastTrained).replace("T"," ").substring(0,19) : "-"}`;
+                } else {
+                    el.innerHTML = `<strong>ML Status: Rules Only</strong> · Isolation Forest not trained (samples: ${s.trainSize || 0}). Generate normal transactions, then Retrain.`;
+                }
+            } catch (e) {
+                el.textContent = "ML Status: unavailable (is Spring Boot running?)";
+            }
+        }
+
+        async function retrainMl() {
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/ml/retrain", { method: "POST" });
+                const data = await res.json();
+                alert(data.message || (data.success ? "Retrained" : "Train failed"));
+                refreshMlStatus();
+            } catch (e) {
+                alert("Retrain failed — server offline?");
+            }
+        }
+
+        async function resetMlOnly() {
+            if (!confirm("Reset Isolation Forest model only? Transaction history will be kept.")) return;
+            try {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/ml/reset", { method: "POST" });
+                const data = await res.json();
+                alert(data.message || "ML reset");
+                refreshMlStatus();
+            } catch (e) {
+                alert("Reset failed — server offline?");
+            }
+        }
+
+        loadDashboard();
+        refreshMlStatus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Transaction History - BSN</title>
+
+    <style>
+
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f1ea;
+            color: #1b242c;
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #fffcf7;
+            border-bottom: 1px solid #e6e0d4;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            font-family: 'Fraunces', serif;
+            color: #1f6f64;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a,
+        .nav-links button {
+            color: #1b242c;
+            text-decoration: none;
+            background: #f0ebe3;
+            border: 1px solid #e6e0d4;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .nav-links a:hover,
+        .nav-links button:hover {
+            background: #e7e0d5;
+        }
+
+        .logout-btn {
+            background: #fde8e6 !important;
+            border-color: #f0b4ae !important;
+            color: #b42318 !important;
+        }
+
+        .user-info {
+            color: #5c6b76;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: 28px auto;
+            padding: 0 18px;
+        }
+
+        .card {
+            background: #fffcf7;
+            border: 1px solid #e6e0d4;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 22px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            padding: 14px;
+            background: #f7f3ea;
+            border-radius: 12px;
+            border: 1px solid #e6e0d4;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 11px;
+            color: #5c6b76;
+            font-weight: 600;
+        }
+
+        .filter-group input {
+            padding: 8px 12px;
+            background: #fff;
+            border: 1px solid #ddd5c7;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .btn-filter {
+            padding: 8px 16px;
+            background: #1f6f64;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-clear {
+            padding: 8px 16px;
+            background: #f0ebe3;
+            color: #1b242c;
+            border: 1px solid #e6e0d4;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-danger {
+            padding: 9px 16px;
+            background: #fde8e6;
+            color: #b42318;
+            border: 1px solid #f0b4ae;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .btn-danger:hover {
+            background: #fbd5d1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 11px 9px;
+            text-align: left;
+            border-bottom: 1px solid #e6e0d4;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f7f3ea;
+            color: #5c6b76;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .status-normal {
+            color: #2f6f4e;
+            font-weight: 700;
+        }
+
+        .status-suspicious {
+            color: #b42318;
+            font-weight: 700;
+        }
+
+        .status-false {
+            color: #9a6700;
+            font-weight: 700;
+        }
+
+        .btn-fp {
+            background: #fff6e0;
+            color: #9a6700;
+            border: 1px solid #efd48a;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .loading,
+        .empty-msg {
+            text-align: center;
+            padding: 50px;
+            color: #8a96a0;
+        }
+
+        .result-count {
+            font-size: 13px;
+            color: #5c6b76;
+            margin-bottom: 12px;
+        }
+
+        .warning-text {
+            font-size: 11px;
+            color: #8a96a0;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 900px) {
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            .navbar {
+                padding: 14px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="navbar">
+
+    <h2>
+        BSN · Admin
+    </h2>
+
+    <div class="nav-links">
+
+        <span
+            class="user-info"
+            id="userName">
+            Admin
+        </span>
+
+        <a href="dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="index.html">
+            Checker
+        </a>
+
+        <a href="history.html">
+            History
+        </a>
+
+        <button
+            class="logout-btn"
+            onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+    <div class="card">
+
+        <div class="title-row">
+
+            <h1>
+                Transaction History
+            </h1>
+
+            <div>
+
+                <button
+                    class="btn-danger"
+                    onclick="clearAllHistory()">
+                    Clear All Transaction History
+                </button>
+
+                <div class="warning-text">
+                    Permanently deletes all transactions and resets ML.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="filter-bar">
+
+            <div class="filter-group">
+
+                <label>
+                    From Date
+                </label>
+
+                <input
+                    type="date"
+                    id="fromDate">
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label>
+                    To Date
+                </label>
+
+                <input
+                    type="date"
+                    id="toDate">
+
+            </div>
+
+
+            <button
+                class="btn-filter"
+                onclick="applyFilter()">
+                Apply Filter
+            </button>
+
+
+            <button
+                class="btn-clear"
+                onclick="clearFilter()">
+                Clear
+            </button>
+
+        </div>
+
+
+        <div
+            class="result-count"
+            id="resultCount">
+        </div>
+
+
+        <div id="content">
+
+            <div class="loading">
+                Loading history records...
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+/*
+ * ADMIN ACCESS CHECK
+ */
+if (
+    sessionStorage.getItem("isLoggedIn") !== "true" ||
+    sessionStorage.getItem("role") !== "ADMIN"
+) {
+
+    window.location.href = "access.html";
+}
+
+
+document.getElementById("userName").textContent =
+    sessionStorage.getItem("fullName") || "Admin";
+
+
+/*
+ * LOGOUT
+ */
+function logout() {
+
+    sessionStorage.clear();
+
+    window.location.href = "access.html";
+}
+
+
+/*
+ * INACTIVITY TIMEOUT
+ */
+let inactivityTime = 2 * 60 * 1000;
+
+let logoutTimer;
+
+
+function resetLogoutTimer() {
+
+    clearTimeout(logoutTimer);
+
+    logoutTimer = setTimeout(() => {
+
+        sessionStorage.clear();
+
+        alert(
+            "Session expired due to inactivity."
+        );
+
+        window.location.href =
+            "access.html";
+
+    }, inactivityTime);
+}
+
+
+window.onload = resetLogoutTimer;
+
+document.onmousemove = resetLogoutTimer;
+
+document.onkeypress = resetLogoutTimer;
+
+document.onclick = resetLogoutTimer;
+
+
+/*
+ * TRANSACTION STORAGE
+ */
+let allTransactions = [];
+
+
+/*
+ * MARK FALSE POSITIVE
+ */
+async function markFalsePositive(id) {
+
+    if (
+        !confirm(
+            "Mark this transaction as False Positive?"
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `https://fraud-detection-system.onrender.com/api/transactions/${id}/false-positive`,
+            {
+                method: "PUT"
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (result.success) {
+
+            alert(
+                "Marked as False Positive"
+            );
+
+            loadHistory();
+
+        } else {
+
+            alert(
+                result.message ||
+                "Failed to update transaction."
+            );
+        }
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Failed to connect to server."
+        );
+    }
+}
+
+
+/*
+ * CLEAR ALL TRANSACTIONS
+ */
+async function clearAllHistory() {
+
+    const confirmed = confirm(
+        "⚠ WARNING ⚠\n\n" +
+
+        "This will permanently delete ALL " +
+        "transaction history for ALL accounts.\n\n" +
+
+        "The Isolation Forest ML model will also " +
+        "be reset.\n\n" +
+
+        "This action cannot be undone.\n\n" +
+
+        "Are you absolutely sure?"
+    );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            "https://fraud-detection-system.onrender.com/api/transactions/clear-all",
+            {
+                method: "DELETE"
+            }
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Server returned " +
+                response.status
+            );
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if (result.success) {
+
+            alert(
+                result.deleted +
+                " transaction(s) deleted.\n\n" +
+                "Isolation Forest has been reset."
+            );
+
+            allTransactions = [];
+
+            document.getElementById(
+                "resultCount"
+            ).textContent = "";
+
+            document.getElementById(
+                "content"
+            ).innerHTML =
+                "<div class='empty-msg'>" +
+                "No transactions recorded yet." +
+                "</div>";
+
+        } else {
+
+            alert(
+                result.message ||
+                "Failed to clear transaction history."
+            );
+        }
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Unable to connect to the server."
+        );
+    }
+}
+
+
+/*
+ * RENDER TABLE
+ */
+function renderTable(data) {
+
+    if (data.length === 0) {
+
+        document.getElementById(
+            "content"
+        ).innerHTML =
+            "<div class='empty-msg'>" +
+            "No transactions found." +
+            "</div>";
+
+        document.getElementById(
+            "resultCount"
+        ).textContent = "";
+
+        return;
+    }
+
+
+    document.getElementById(
+        "resultCount"
+    ).textContent =
+        `Showing ${data.length} transaction(s)`;
+
+
+    let html = `
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>ACCOUNT</th>
+
+                    <th>AMOUNT</th>
+
+                    <th>TYPE</th>
+
+                    <th>LOCATION</th>
+
+                    <th>RISK</th>
+
+                    <th>STATUS</th>
+
+                    <th>TIME</th>
+
+                    <th>ACTION</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+    `;
+
+
+    data.forEach(tx => {
+
+
+        let statusClass =
+            "status-normal";
+
+        let statusText =
+            "CLEARED";
+
+
+        if (tx.falsePositive) {
+
+            statusClass =
+                "status-false";
+
+            statusText =
+                "FALSE POSITIVE";
+
+        } else if (
+            tx.status === "SUSPICIOUS"
+        ) {
+
+            statusClass =
+                "status-suspicious";
+
+            statusText =
+                "FLAGGED";
+        }
+
+
+        let actionBtn = "";
+
+
+        if (
+            tx.status === "SUSPICIOUS" &&
+            !tx.falsePositive
+        ) {
+
+            actionBtn = `
+
+                <button
+                    class="btn-fp"
+                    onclick="markFalsePositive(${tx.id})">
+
+                    Mark FP
+
+                </button>
+
+            `;
+        }
+
+
+        html += `
+
+            <tr>
+
+                <td>
+                    ${tx.id}
+                </td>
+
+                <td>
+                    ${tx.accountNumber || "-"}
+                </td>
+
+                <td>
+                    RM ${Number(tx.amount || 0).toFixed(2)}
+                </td>
+
+                <td>
+                    ${tx.transactionType || "-"}
+                </td>
+
+                <td>
+                    ${tx.location || "-"}
+                </td>
+
+                <td>
+                    ${Number(tx.riskScore || 0)}%
+                </td>
+
+                <td class="${statusClass}">
+                    ${statusText}
+                </td>
+
+                <td>
+                    ${
+                        tx.timestamp
+                            ? tx.timestamp
+                                .replace("T", " ")
+                                .substring(0, 19)
+                            : "-"
+                    }
+                </td>
+
+                <td>
+                    ${actionBtn}
+                </td>
+
+            </tr>
+
+        `;
+    });
+
+
+    html += `
+
+            </tbody>
+
+        </table>
+
+    `;
+
+
+    document.getElementById(
+        "content"
+    ).innerHTML = html;
+}
+
+
+/*
+ * APPLY DATE FILTER
+ */
+function applyFilter() {
+
+    const fromDate =
+        document.getElementById(
+            "fromDate"
+        ).value;
+
+
+    const toDate =
+        document.getElementById(
+            "toDate"
+        ).value;
+
+
+    let filtered =
+        [...allTransactions];
+
+
+    if (fromDate) {
+
+        const from =
+            new Date(fromDate);
+
+        from.setHours(
+            0, 0, 0, 0
+        );
+
+
+        filtered =
+            filtered.filter(
+                tx =>
+                    tx.timestamp &&
+                    new Date(tx.timestamp) >= from
+            );
+    }
+
+
+    if (toDate) {
+
+        const to =
+            new Date(toDate);
+
+        to.setHours(
+            23, 59, 59, 999
+        );
+
+
+        filtered =
+            filtered.filter(
+                tx =>
+                    tx.timestamp &&
+                    new Date(tx.timestamp) <= to
+            );
+    }
+
+
+    renderTable(
+        filtered.reverse()
+    );
+}
+
+
+/*
+ * CLEAR DATE FILTER
+ */
+function clearFilter() {
+
+    document.getElementById(
+        "fromDate"
+    ).value = "";
+
+
+    document.getElementById(
+        "toDate"
+    ).value = "";
+
+
+    renderTable(
+        [...allTransactions].reverse()
+    );
+}
+
+
+/*
+ * LOAD HISTORY
+ */
+async function loadHistory() {
+
+    try {
+
+        const response =
+            await fetch(
+                "https://fraud-detection-system.onrender.com/api/transactions/history"
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Server returned " +
+                response.status
+            );
+        }
+
+
+        allTransactions =
+            await response.json();
+
+
+        if (
+            allTransactions.length === 0
+        ) {
+
+            document.getElementById(
+                "content"
+            ).innerHTML =
+                "<div class='empty-msg'>" +
+                "No transactions recorded yet." +
+                "</div>";
+
+            return;
+        }
+
+
+        renderTable(
+            [...allTransactions].reverse()
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById(
+            "content"
+        ).innerHTML =
+            "<div class='empty-msg' " +
+            "style='color:#b42318;'>" +
+            "Error loading history." +
+            "</div>";
+    }
+}
+
+
+/*
+ * INITIAL LOAD
+ */
+loadHistory();
+
+</script>
+
+</body>
+</html>
