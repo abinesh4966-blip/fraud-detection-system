@@ -164,8 +164,8 @@
         async function loadAll() {
             try {
                 const [sumRes, listRes] = await Promise.all([
-                    fetch("http://localhost:8080/api/admin/users/summary"),
-                    fetch("http://localhost:8080/api/admin/users")
+                    fetch("https://fraud-detection-system.onrender.com/api/admin/users/summary"),
+                    fetch("https://fraud-detection-system.onrender.com/api/admin/users")
                 ]);
                 const sum = await sumRes.json();
                 users = await listRes.json();
@@ -240,7 +240,7 @@
         async function unlockUser(id) {
             if (!confirm("Unlock this account?")) return;
             try {
-                const res = await fetch("http://localhost:8080/api/admin/users/" + id + "/unlock", { method: "PUT" });
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/admin/users/" + id + "/unlock", { method: "PUT" });
                 const data = await res.json();
                 alert(data.message || "Done");
                 loadAll();

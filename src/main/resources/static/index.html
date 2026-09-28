@@ -86,7 +86,7 @@
             const location = document.getElementById("location").value;
             if (!accountNumber || !amount || !location) { alert("Please fill in all fields"); return; }
             try {
-                const response = await fetch("http://localhost:8080/api/transactions/check", {
+                const response = await fetch("https://fraud-detection-system.onrender.com/api/transactions/check", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

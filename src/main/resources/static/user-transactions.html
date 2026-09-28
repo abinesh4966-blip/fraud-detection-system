@@ -321,7 +321,7 @@
         try {
 
             const response = await fetch(
-                "http://localhost:8080/api/transactions/clear-mine" +
+                "https://fraud-detection-system.onrender.com/api/transactions/clear-mine" +
                 "?accountNumber=" +
                 encodeURIComponent(accountNumber),
                 {
@@ -382,7 +382,7 @@
         try {
 
             const response = await fetch(
-                "http://localhost:8080/api/transactions/my-history?accountNumber=" +
+                "https://fraud-detection-system.onrender.com/api/transactions/my-history?accountNumber=" +
                 encodeURIComponent(accountNumber)
             );
 

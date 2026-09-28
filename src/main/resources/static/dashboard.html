@@ -247,7 +247,7 @@
         async function loadDashboard() {
             refreshMlStatus();
             try {
-                const res = await fetch("http://localhost:8080/api/transactions/stats");
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/stats");
                 const stats = await res.json();
 
                 document.getElementById("totalCount").textContent = stats.total;
@@ -372,7 +372,7 @@
 
         async function generateOneTransaction() {
             try {
-                const res = await fetch("http://localhost:8080/api/transactions/generate", {
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/generate", {
                     method: "POST"
                 });
                 const tx = await res.json();
@@ -459,7 +459,7 @@
                 list.insertBefore(temp, list.firstChild);
 
                 try {
-                    const res = await fetch("http://localhost:8080/api/transactions/check", {
+                    const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/check", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(payload)
@@ -488,7 +488,7 @@
         async function clearAllData() {
             if (!confirm("Delete ALL transactions and reset ML? This cannot be undone.")) return;
             try {
-                const res = await fetch("http://localhost:8080/api/transactions/clear-all", { method: "DELETE" });
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/clear-all", { method: "DELETE" });
                 const data = await res.json();
                 alert((data.message || "Cleared") + " (deleted: " + (data.deleted || 0) + ")");
                 document.getElementById("liveFeed").innerHTML = '<div class="empty">Waiting for live transactions...</div>';
@@ -515,7 +515,7 @@
 
             try {
                 stopLiveMonitoring();
-                const res = await fetch("http://localhost:8080/api/transactions/clear-all", { method: "DELETE" });
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/clear-all", { method: "DELETE" });
                 const data = await res.json();
 
                 document.getElementById("totalCount").textContent = "0";
@@ -548,7 +548,7 @@
             const el = document.getElementById("mlStatusText");
             if (!el) return;
             try {
-                const res = await fetch("http://localhost:8080/api/transactions/ml/status");
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/ml/status");
                 const s = await res.json();
                 if (s.ready) {
                     el.innerHTML = `<strong style="color:var(--accent)">ML Status: Ready</strong> · Training samples: <b>${s.trainSize}</b> · Last trained: ${s.lastTrained ? String(s.lastTrained).replace("T"," ").substring(0,19) : "-"}`;
@@ -562,7 +562,7 @@
 
         async function retrainMl() {
             try {
-                const res = await fetch("http://localhost:8080/api/transactions/ml/retrain", { method: "POST" });
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/ml/retrain", { method: "POST" });
                 const data = await res.json();
                 alert(data.message || (data.success ? "Retrained" : "Train failed"));
                 refreshMlStatus();
@@ -574,7 +574,7 @@
         async function resetMlOnly() {
             if (!confirm("Reset Isolation Forest model only? Transaction history will be kept.")) return;
             try {
-                const res = await fetch("http://localhost:8080/api/transactions/ml/reset", { method: "POST" });
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/ml/reset", { method: "POST" });
                 const data = await res.json();
                 alert(data.message || "ML reset");
                 refreshMlStatus();

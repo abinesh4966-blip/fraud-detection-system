@@ -477,7 +477,7 @@ async function markFalsePositive(id) {
     try {
 
         const response = await fetch(
-            `http://localhost:8080/api/transactions/${id}/false-positive`,
+            `https://fraud-detection-system.onrender.com/api/transactions/${id}/false-positive`,
             {
                 method: "PUT"
             }
@@ -544,7 +544,7 @@ async function clearAllHistory() {
     try {
 
         const response = await fetch(
-            "http://localhost:8080/api/transactions/clear-all",
+            "https://fraud-detection-system.onrender.com/api/transactions/clear-all",
             {
                 method: "DELETE"
             }
@@ -882,7 +882,7 @@ async function loadHistory() {
 
         const response =
             await fetch(
-                "http://localhost:8080/api/transactions/history"
+                "https://fraud-detection-system.onrender.com/api/transactions/history"
             );
 
 

@@ -49,7 +49,7 @@
 
         async function load() {
             try {
-                const res = await fetch("http://localhost:8080/api/transactions/my-history?accountNumber=" + encodeURIComponent(accountNumber));
+                const res = await fetch("https://fraud-detection-system.onrender.com/api/transactions/my-history?accountNumber=" + encodeURIComponent(accountNumber));
                 const all = await res.json();
                 const alerts = all.filter(t =>
                     String(t.accountNumber) === String(accountNumber) &&
